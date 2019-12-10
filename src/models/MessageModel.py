@@ -23,18 +23,18 @@ class MessageModel(db.Model):
         self.modified_at = datetime.datetime.utcnow()
 
     def save(self):
-      db.session.add(self)
-      db.session.commit()
+        db.session.add(self)
+        db.session.commit()
 
     def update(self, data):
-      for key, item in data.items():
-        setattr(self, key, item)
-      self.modified_at = datetime.datetime.utcnow()
-      db.session.commit()
+        for key, item in data.items():
+          setattr(self, key, item)
+        self.modified_at = datetime.datetime.utcnow()
+        db.session.commit()
 
     def delete(self):
-      db.session.delete(self)
-      db.session.commit()
+        db.session.delete(self)
+        db.session.commit()
 
     @staticmethod
     def get_all_messages_with_user(current_user_id, other_user_id):
@@ -46,9 +46,6 @@ class MessageModel(db.Model):
       return '<id {}>'.format(self.id)
 
 class MessageSchema(Schema):
-  """
-  Message Schema
-  """
   id = fields.Int(dump_only=True)
   sender_id = fields.Int(required=True)
   receiver_id = fields.Int(required=True)

@@ -10,9 +10,6 @@ import pgeocode
 import requests
 
 class PlayerModel(db.Model): # PlayerModel class inherits from db.Model
-  """
-  Player Model
-  """
   RANKS = {'Beginner': 100, 'Intermediate': 200, 'Advanced': 300}
 
   __tablename__ = 'players'
@@ -35,9 +32,6 @@ class PlayerModel(db.Model): # PlayerModel class inherits from db.Model
 
   # class constructor to set class attributes
   def __init__(self, data):
-    """
-    Player Model
-    """
     self.first_name = data.get('first_name')
     self.last_name = data.get('last_name')
     self.email = data.get('email')
@@ -247,10 +241,6 @@ class BytesField(fields.Field):
         return base64_string
 
 class PlayerSchema(Schema):
-    """
-    Player Schema
-    """
-
     id = fields.Int(dump_only=True)
     first_name = fields.Str(required=True)
     last_name = fields.Str(required=True)

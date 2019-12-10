@@ -4,10 +4,6 @@ from marshmallow import fields, Schema
 
 
 class ResultModel(db.Model): # ResultModel class inherits from db.Model
-    """
-    Result Model
-    """
-
     # table name
     __tablename__ = 'results' # name our table Results
 
@@ -22,11 +18,7 @@ class ResultModel(db.Model): # ResultModel class inherits from db.Model
     loser = db.relationship("PlayerModel", primaryjoin = "ResultModel.loser_id == PlayerModel.id", backref="loser")
     game = db.relationship("GameModel", back_populates="result")
 
-
     def __init__(self, data): # class constructor used to set the class attributes
-        """
-        Class constructor: set class attributes
-        """
         self.game_id = data.get('game_id')
         self.winner_id = data.get('winner_id')
         self.loser_id = data.get('loser_id')
@@ -68,9 +60,6 @@ class ResultModel(db.Model): # ResultModel class inherits from db.Model
         return '<id {}>'.format(self.id)
 
 class ResultSchema(Schema):
-    """
-    Result Schema
-    """
     id = fields.Int(dump_only=True)
     game_id = fields.Int(required=True)
     winner_id = fields.Int(required=False)
