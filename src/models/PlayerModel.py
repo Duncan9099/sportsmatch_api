@@ -208,7 +208,6 @@ class Postcode(fields.Field):
     Creating custom field for scheme that serializes base64 to LargeBinary
     and desrializes LargeBinary to base64
     """
-
     def _deserialize(self, value, attr, data, **kwargs):
         if value is None:
             return ""

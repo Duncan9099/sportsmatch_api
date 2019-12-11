@@ -3,6 +3,7 @@ import os
 import json
 from ..app import create_app, db
 from ..models.PostModel import PostModel, PostSchema
+from ..models.PlayerModel import PlayerModel, PlayerSchema
 
 class PostTest(unittest.TestCase):
     def setUp(self):
@@ -45,21 +46,48 @@ class PostTest(unittest.TestCase):
           player_2_id = player2.id
 
         self.post_1 = {
+          'user_id': player_1_id,
           'content': 'This is a post'
+        }
+
+        self.post_2 = {
+          'user_id': player_1_id,
+          'content': 'This is another post'
         }
 
     def test_create_post(self):
         res = self.client().post('api/v1/players/login', headers={'Content-Type': 'application/json'}, data=json.dumps(self.player_1))
         api_token = json.loads(res.data).get('jwt_token')
-        res = self.client().post('api/v1/messages/', headers={'Content-Type': 'application/json', 'api-token': api_token}, data=json.dumps(self.post_1))
+        res = self.client().post('api/v1/posts/', headers={'Content-Type': 'application/json', 'api-token': api_token}, data=json.dumps(self.post_1))
         json_data = json.loads(res.data)
-        self.assertEqual(json_data.get('player_id'), 1)
+        self.assertEqual(json_data.get('user_id'), 1)
         self.assertEqual(json_data.get('content'), 'This is a post')
 
+    def test_create_post_must_have_content(self):
+        res = self.client().post('api/v1/players/login', headers={'Content-Type': 'application/json'}, data=json.dumps(self.player_1))
+        api_token = json.loads(res.data).get('jwt_token')
+        res = self.client().post('api/v1/posts/', headers={'Content-Type': 'application/json', 'api-token': api_token}, data={'user_id': 1, 'content': ''})
+        self.assertEqual(res.status_code, 400)
+
+    def test_create_post_must_have_user(self):
+        res = self.client().post('api/v1/players/login', headers={'Content-Type': 'application/json'}, data=json.dumps(self.player_1))
+        api_token = json.loads(res.data).get('jwt_token')
+        res = self.client().post('api/v1/posts/', headers={'Content-Type': 'application/json', 'api-token': api_token}, data={'content': 'This is a post'})
+        self.assertEqual(res.status_code, 400)
+
+    def test_get_all_posts(self):
+        res = self.client().post('api/v1/players/login', headers={'Content-Type': 'application/json'}, data=json.dumps(self.player_1))
+        api_token = json.loads(res.data).get('jwt_token')
+        res = self.client().post('api/v1/posts/', headers={'Content-Type': 'application/json', 'api-token': api_token}, data=json.dumps(self.post_1))
+        res = self.client().post('api/v1/posts/', headers={'Content-Type': 'application/json', 'api-token': api_token}, data=json.dumps(self.post_2))
+        res = self.client().get('api/v1/posts/', headers={'Content-Type': 'application/json', 'api-token': api_token})
+        json_data = json.loads(res.data)
+        self.assertEqual(json_data[0].get('user_id'), 1)
+        self.assertEqual(json_data[0].get('content'), 'This is another post')
+        self.assertEqual(json_data[1].get('user_id'), 1)
+        self.assertEqual(json_data[1].get('content'), 'This is a post')
+
     def tearDown(self):
-       """
-       Runs at the end of the test case; drops the db
-       """
        with self.app.app_context():
          db.session.remove()
          db.drop_all()

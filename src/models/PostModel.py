@@ -27,27 +27,22 @@ class PostModel(db.Model):
         db.session.add(self)
         db.session.commit()
 
+    def update(self, data):
+        for key, item in data.items():
+          setattr(self, key, item)
+        self.modified_at = datetime.datetime.utcnow()
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    @staticmethod
+    def get_all_posts():
+        return PostModel.query.order_by(PostModel.created_at.desc())
+
     def __repr__(self):
         return '<id {}>'.format(self.id)
-
-# class BytesField(fields.Field):
-#     """
-#     Creating custom field for schema that deserializes base64 to LargeBinary
-#     and serializes LargeBinary to base64
-#     """
-#     def _deserialize(self, value, attr, data, **kwargs):
-#         if value is None:
-#             return ""
-#         binary_string = bin(int.from_bytes(value.encode(), 'big'))
-#         binary = bytes(binary_string, 'utf-8')
-#         return binary
-#
-#     def _serialize(self, value, attr, obj, **kwargs):
-#         if value is None:
-#             return ""
-#         binary_string = int(value,2)
-#         base64_string = binary_string.to_bytes((binary_string.bit_length() + 7) // 8, 'big').decode()
-#         return base64_string
 
 class PostSchema(Schema):
     id = fields.Int(dump_only=True)
