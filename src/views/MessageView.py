@@ -33,7 +33,6 @@ def get_all_messages(other_user_id):
 @Auth.auth_required
 def create():
     req_data = request.get_json()
-    print(req_data)
     data = message_schema.load(req_data)
     content = data.get('content')
     if not content:

@@ -41,6 +41,10 @@ class PostModel(db.Model):
     def get_all_posts():
         return PostModel.query.order_by(PostModel.created_at.desc())
 
+    @staticmethod
+    def get_one_post(id):
+        return PostModel.query.get(id)
+
     def __repr__(self):
         return '<id {}>'.format(self.id)
 

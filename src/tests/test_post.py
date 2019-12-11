@@ -66,7 +66,7 @@ class PostTest(unittest.TestCase):
     def test_create_post_must_have_content(self):
         res = self.client().post('api/v1/players/login', headers={'Content-Type': 'application/json'}, data=json.dumps(self.player_1))
         api_token = json.loads(res.data).get('jwt_token')
-        res = self.client().post('api/v1/posts/', headers={'Content-Type': 'application/json', 'api-token': api_token}, data={'user_id': 1, 'content': ''})
+        res = self.client().post('api/v1/posts/', headers={'Content-Type': 'application/json', 'api-token': api_token}, data={'user_id': '1', 'content': ''})
         self.assertEqual(res.status_code, 400)
 
     def test_create_post_must_have_user(self):
@@ -86,6 +86,14 @@ class PostTest(unittest.TestCase):
         self.assertEqual(json_data[0].get('content'), 'This is another post')
         self.assertEqual(json_data[1].get('user_id'), 1)
         self.assertEqual(json_data[1].get('content'), 'This is a post')
+
+    def test_edit_post(self):
+        res = self.client().post('api/v1/players/login', headers={'Content-Type': 'application/json'}, data=json.dumps(self.player_1))
+        api_token = json.loads(res.data).get('jwt_token')
+        res = self.client().post('api/v1/posts/', headers={'Content-Type': 'application/json', 'api-token': api_token}, data=json.dumps(self.post_1))
+        res = self.client().patch('api/v1/posts/1', headers={'Content-Type': 'application/json', 'api-token': api_token}, data=json.dumps({'content': 'This is an updated post'}))
+        json_data = json.loads(res.data)
+        self.assertEqual(json_data.get('content'), 'This is an updated post')
 
     def tearDown(self):
        with self.app.app_context():

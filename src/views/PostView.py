@@ -32,3 +32,13 @@ def get_all_posts():
     posts = PostModel.get_all_posts()
     data = post_schema.dump(posts, many=True)
     return custom_response(data, 200)
+
+@post_api.route('/<int:post_id>', methods=['PATCH'])
+@Auth.auth_required
+def update_post_content(post_id):
+    req_data = request.get_json()
+    data = post_schema.load(req_data, partial=True)
+    post = PostModel.get_one_post(post_id)
+    post.update(data)
+    post_data = post_schema.dump(post)
+    return custom_response(post_data, 200)
