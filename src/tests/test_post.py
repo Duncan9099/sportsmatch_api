@@ -87,13 +87,25 @@ class PostTest(unittest.TestCase):
         self.assertEqual(json_data[1].get('user_id'), 1)
         self.assertEqual(json_data[1].get('content'), 'This is a post')
 
-    def test_edit_post(self):
+    def test_edit_post_content(self):
         res = self.client().post('api/v1/players/login', headers={'Content-Type': 'application/json'}, data=json.dumps(self.player_1))
         api_token = json.loads(res.data).get('jwt_token')
         res = self.client().post('api/v1/posts/', headers={'Content-Type': 'application/json', 'api-token': api_token}, data=json.dumps(self.post_1))
         res = self.client().patch('api/v1/posts/1', headers={'Content-Type': 'application/json', 'api-token': api_token}, data=json.dumps({'content': 'This is an updated post'}))
         json_data = json.loads(res.data)
+        print(json_data)
+        print(res)
+        self.assertEqual(res.status_code, 200)
         self.assertEqual(json_data.get('content'), 'This is an updated post')
+
+    def test_only_original_poster_can_edit_post(self):
+        res = self.client().post('api/v1/players/login', headers={'Content-Type': 'application/json'}, data=json.dumps(self.player_1))
+        api_token = json.loads(res.data).get('jwt_token')
+        res = self.client().post('api/v1/posts/', headers={'Content-Type': 'application/json', 'api-token': api_token}, data=json.dumps(self.post_1))
+        res = self.client().post('api/v1/players/login', headers={'Content-Type': 'application/json'}, data=json.dumps(self.player_2))
+        api_token = json.loads(res.data).get('jwt_token')
+        res = self.client().patch('api/v1/posts/1', headers={'Content-Type': 'application/json', 'api-token': api_token}, data=json.dumps({'content': 'This is an updated post'}))
+        self.assertEqual(res.status_code, 400)
 
     def tearDown(self):
        with self.app.app_context():

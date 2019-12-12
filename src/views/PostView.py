@@ -39,6 +39,10 @@ def update_post_content(post_id):
     req_data = request.get_json()
     data = post_schema.load(req_data, partial=True)
     post = PostModel.get_one_post(post_id)
+    user_id = Auth.current_user_id()
+    if not post.user_id == user_id:
+        return custom_response({'error': 'Permission denied'}, 400)
+
     post.update(data)
     post_data = post_schema.dump(post)
     return custom_response(post_data, 200)
