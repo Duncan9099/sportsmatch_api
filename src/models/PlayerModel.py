@@ -10,9 +10,6 @@ import pgeocode
 import requests
 
 class PlayerModel(db.Model): # PlayerModel class inherits from db.Model
-  """
-  Player Model
-  """
   RANKS = {'Beginner': 100, 'Intermediate': 200, 'Advanced': 300}
 
   __tablename__ = 'players'
@@ -35,9 +32,6 @@ class PlayerModel(db.Model): # PlayerModel class inherits from db.Model
 
   # class constructor to set class attributes
   def __init__(self, data):
-    """
-    Player Model
-    """
     self.first_name = data.get('first_name')
     self.last_name = data.get('last_name')
     self.email = data.get('email')
@@ -157,6 +151,7 @@ class PlayerModel(db.Model): # PlayerModel class inherits from db.Model
     players = PlayerModel.get_players_by_ability(id, ability, user.sport)
     return PlayerModel.get_players_within_distance(players, serialized_user, distance)
 
+
   @staticmethod
   def get_player_location(postcode):
     req_data = requests.get(f'https://api.postcodes.io/postcodes/{postcode}').json()
@@ -182,7 +177,8 @@ class PlayerModel(db.Model): # PlayerModel class inherits from db.Model
         PlayerModel.ability==ability,
         PlayerModel.id != id,
         PlayerModel.sport==sport
-      )
+    ).paginate(per_page=2).items
+    # return PlayerModel(pagination.items)
 
   @staticmethod
   def get_players_within_distance(players, user, distance):
@@ -247,10 +243,6 @@ class BytesField(fields.Field):
         return base64_string
 
 class PlayerSchema(Schema):
-    """
-    Player Schema
-    """
-
     id = fields.Int(dump_only=True)
     first_name = fields.Str(required=True)
     last_name = fields.Str(required=True)
