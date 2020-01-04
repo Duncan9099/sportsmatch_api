@@ -65,7 +65,7 @@ def get_current_user():
 @Auth.auth_required
 def get_all_players():
     user_id = Auth.current_user_id()
-    players = PlayerModel.get_filtered_players(user_id, request.headers.get('ability'), request.headers.get('distance'))
+    players = PlayerModel.get_filtered_players(user_id, request.headers.get('ability'), request.headers.get('distance'), request.headers.get('page'))
     players_data = player_schema.dump(players, many=True)
     return custom_response(players_data, 200)
 

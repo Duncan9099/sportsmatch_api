@@ -103,11 +103,19 @@ class MessageTest(unittest.TestCase):
         self.assertEqual(res.status_code, 201)
         res = self.client().get('api/v1/messages/2', headers={'Content-Type': 'application/json', 'api-token': api_token})
         json_data = json.loads(res.data)
-        print(json_data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(json_data[-1].get('sender'), 'Dom')
         self.assertEqual(json_data[-1].get('receiver'), 'Pam')
         self.assertEqual(json_data[-1].get('player_postcode'), 'N169NP')
+
+    def test_get_all_users_messages(self): 
+      res = self.client().post('api/v1/players/login', headers={'Content-Type': 'application/json'}, data=json.dumps(self.player_1))
+      api_token = json.loads(res.data).get('jwt_token')
+      res = self.client().post('api/v1/messages/', headers={'Content-Type': 'application/json', 'api-token': api_token}, data=json.dumps(self.message_1))
+      self.assertEqual(res.status_code, 201)
+      res = self.client().get('api/v1/messages/', headers={'Content-Type': 'application/json', 'api-token': api_token})
+      json_data = json.loads(res.data)
+      self.assertEqual(res.status_code, 200)
 
     def tearDown(self):
        """

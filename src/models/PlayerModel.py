@@ -144,11 +144,11 @@ class PlayerModel(db.Model): # PlayerModel class inherits from db.Model
     return player_schema.dump(player)
 
   @staticmethod
-  def get_filtered_players(id, ability, distance):
+  def get_filtered_players(id, ability, distance, page):
     user_schema = PlayerSchema()
     user = PlayerModel.query.filter_by(id=id).first()
     serialized_user = user_schema.dump(user)
-    players = PlayerModel.get_players_by_ability(id, ability, user.sport)
+    players = PlayerModel.get_players_by_ability(id, ability, user.sport, page)
     return PlayerModel.get_players_within_distance(players, serialized_user, distance)
 
 
@@ -161,7 +161,7 @@ class PlayerModel(db.Model): # PlayerModel class inherits from db.Model
 
 # Currently not in use anywhere
   @staticmethod
-  def get_players_by_ability(id, ability, sport):
+  def get_players_by_ability(id, ability, sport, page):
     return PlayerModel.query.with_entities(
         PlayerModel.id,
         PlayerModel.first_name,
@@ -172,13 +172,13 @@ class PlayerModel(db.Model): # PlayerModel class inherits from db.Model
         PlayerModel.rank_points,
         PlayerModel.bio,
         PlayerModel.sport,
-        PlayerModel.postcode
+        PlayerModel.postcode, 
+        PlayerModel.profile_image
     ).filter(
         PlayerModel.ability==ability,
         PlayerModel.id != id,
         PlayerModel.sport==sport
-    ).paginate(per_page=2).items
-    # return PlayerModel(pagination.items)
+    ).paginate(page=int(page), per_page=4, error_out=True).items
 
   @staticmethod
   def get_players_within_distance(players, user, distance):
