@@ -39,13 +39,13 @@ class MessageModel(db.Model):
     @staticmethod
     def get_all_messages_with_user(current_user_id, other_user_id):
       return MessageModel.query.filter(or_(MessageModel.sender_id==current_user_id, MessageModel.receiver_id==current_user_id)).\
-                                filter(or_(MessageModel.sender_id==other_user_id, MessageModel.receiver_id==other_user_id)).\
-                                order_by(MessageModel.created_at.desc())
+                                filter(or_(MessageModel.sender_id==other_user_id, MessageModel.receiver_id==other_user_id))
 
     @staticmethod
     def get_users_messages(current_user_id):
       return MessageModel.query.filter(or_(MessageModel.sender_id==current_user_id, MessageModel.receiver_id==current_user_id)).\
-      order_by(MessageModel.created_at.desc()).paginate(per_page=10, error_out=True).items
+                                distinct(MessageModel.sender_id).\
+                                order_by(MessageModel.created_at.desc()).paginate(per_page=10, error_out=True).items
 
     def __repr__(self):
       return '<id {}>'.format(self.id)
