@@ -2,6 +2,7 @@ import datetime
 from . import db # import db instance from models/__init__.py
 from marshmallow import fields, Schema
 from sqlalchemy import or_
+from .PlayerModel import PlayerModel, PlayerSchema
 
 class MessageModel(db.Model):
     __tablename__ = 'messages'
@@ -44,19 +45,18 @@ class MessageModel(db.Model):
     @staticmethod
     def get_users_messages(current_user_id):
       return MessageModel.query.filter(or_(MessageModel.sender_id==current_user_id, MessageModel.receiver_id==current_user_id)).\
-                                distinct(MessageModel.sender_id).\
-                                order_by(MessageModel.created_at.desc()).paginate(per_page=10, error_out=True).items
+                                distinct(MessageModel.sender_id, MessageModel.receiver_id).\
+                                paginate(per_page=10, error_out=True).items
 
     def __repr__(self):
       return '<id {}>'.format(self.id)
 
 class MessageSchema(Schema):
-  """
-  Message Schema
-  """
   id = fields.Int(dump_only=True)
   sender_id = fields.Int(required=True)
   receiver_id = fields.Int(required=True)
   content = fields.Str(required=True)
   created_at = fields.DateTime(dump_only=True)
   modified_at = fields.DateTime(dump_only=True)
+  sender = fields.Nested('PlayerSchema')
+  receiver = fields.Nested('PlayerSchema')
