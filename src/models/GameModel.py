@@ -62,7 +62,7 @@ class GameModel(db.Model): # GameModel class inherits from db.Model
   @staticmethod
   def get_games_by_id(value):
     return GameModel.query.filter_by(id=value)
-
+ 
   @staticmethod
   def get_game_by_org_id(user_id):
     return GameModel.query.filter_by(organiser_id=user_id).filter(GameModel.status == "confirmed", GameModel.game_date <= datetime.datetime.utcnow())

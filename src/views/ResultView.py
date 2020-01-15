@@ -46,6 +46,14 @@ def create(game_id):
       message = {'error': 'You can only add a result if you are the organiser.'}
       return custom_response(message, 400)
 
+@result_api.route('/', methods=['GET'])
+@Auth.auth_required
+def get_player_results(): 
+    user_id = Auth.current_user_id()
+    results = ResultModel.get_player_results(user_id)
+    data = result_schema.dump(results, many=True)
+    return custom_response(data, 200)
+
 def custom_response(res, status_code):
     return Response(
         mimetype="application/json",

@@ -1,6 +1,7 @@
 import datetime
 from . import db # import db instance from models/__init__.py
 from marshmallow import fields, Schema
+from sqlalchemy import or_
 
 
 class ResultModel(db.Model): # ResultModel class inherits from db.Model
@@ -63,6 +64,10 @@ class ResultModel(db.Model): # ResultModel class inherits from db.Model
     def get_all_results(value):
         return ResultModel.query.filter_by(game_id=value)
 
+    @staticmethod
+    def get_player_results(id): 
+        return ResultModel.query.filter(or_(ResultModel.winner_id==id, ResultModel.loser_id==id))
+
 
     def __repr__(self):
         return '<id {}>'.format(self.id)
@@ -78,3 +83,6 @@ class ResultSchema(Schema):
     result_confirmed = fields.Boolean(required=True)
     created_at = fields.DateTime(dump_only=True)
     modified_at = fields.DateTime(dump_only=True)
+    winner = fields.Nested('PlayerSchema')
+    loser = fields.Nested('PlayerSchema') 
+    game = fields.Nested('GameSchema')
