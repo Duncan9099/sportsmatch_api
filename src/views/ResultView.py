@@ -8,19 +8,6 @@ result_api = Blueprint('results', __name__)
 result_schema = ResultSchema()
 game_schema = GameSchema()
 
-# @result_api.route('/<int:result_id>', methods=['GET'])
-# @Auth.auth_required
-# def show_one_result(result_id):
-#     current_user_id = Auth.current_user_id()
-#
-#     result = ResultModel.get_one_result(result_id)
-#     if result.winner_id == current_user_id or result.loser_id == current_user_id:
-#             data = result_schema.dump(result)
-#             return custom_response(data, 200)
-#
-#     message = {'error': 'You must have played in this game to view the result.'}
-#     return custom_response(message, 404)
-
 @result_api.route('/<int:game_id>/new', methods=['POST'])
 @Auth.auth_required
 def create(game_id):
