@@ -5,11 +5,6 @@ from .ResultModel import ResultSchema
 from sqlalchemy import or_
 
 class GameModel(db.Model): # GameModel class inherits from db.Model
-  """
-  Game Model
-  """
-
-  # table name
   __tablename__ = 'games' # name our table Games
 
   id = db.Column(db.Integer, primary_key=True)
@@ -27,9 +22,6 @@ class GameModel(db.Model): # GameModel class inherits from db.Model
 
   # class constructor
   def __init__(self, data): # class constructor used to set the class attributes
-    """
-    Class constructor
-    """
     self.organiser_id = data.get('organiser_id')
     self.opponent_id = data.get('opponent_id')
     self.game_date = data.get('game_date')
@@ -83,9 +75,6 @@ class GameModel(db.Model): # GameModel class inherits from db.Model
     return '<id {}>'.format(self.id)
 
 class GameSchema(Schema):
-  """
-  Game Schema
-  """
   id = fields.Int(dump_only=True)
   organiser_id = fields.Int(required=True)
   opponent_id = fields.Int(required=True)
@@ -94,3 +83,5 @@ class GameSchema(Schema):
   status = fields.String(required=True)
   created_at = fields.DateTime(dump_only=True)
   modified_at = fields.DateTime(dump_only=True)
+  organiser = fields.Nested('PlayerSchema')
+  opponent = fields.Nested('PlayerSchema')

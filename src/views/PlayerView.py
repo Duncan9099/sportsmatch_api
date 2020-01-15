@@ -39,7 +39,14 @@ def login():
         return custom_response({'error': 'invalid password'}, 400)
     player_data = player_schema.dump(player)
     token = Auth.generate_token(player_data.get('id'))
-    return custom_response({'jwt_token': token, 'user_id': player_data.get('id')}, 200)
+    return custom_response({
+        'jwt_token': token, 
+        'user_id': player_data.get('id'),
+        'profile_image': player_data.get('profile_image'), 
+        'first_name': player_data.get('first_name'), 
+        'sport': player_data.get('sport'), 
+        'ability': player_data.get('ability')
+    }, 200)
 
 @player_api.route('/<int:player_id>', methods=['GET'])
 @Auth.auth_required

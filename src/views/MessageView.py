@@ -51,9 +51,7 @@ def get_users_messages():
     # if not message:
     #     return custom_response({'message': 'No previous messages'})
     messages = MessageModel.get_users_messages(Auth.current_user_id())
-    print(messages)
     data = message_schema.dump(messages, many=True)
-    print(data)
     # data.append({
     #     'sender': message.sender.first_name,
     #     'receiver': message.receiver.first_name,
