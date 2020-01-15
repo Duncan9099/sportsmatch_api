@@ -6,7 +6,7 @@ class PhotoModel(db.Model):
     __tablename__ = 'photos'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('players.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('players.id'), unique=True, nullable=False)
     photo1 = db.Column(db.LargeBinary, nullable=True)
     photo2 = db.Column(db.LargeBinary, nullable=True)
     photo3 = db.Column(db.LargeBinary, nullable=True)
@@ -44,6 +44,10 @@ class PhotoModel(db.Model):
 
     def __repr__(self):
         return '<id {}>'.format(self.id)
+
+    @staticmethod 
+    def get_photos(id):
+        return PhotoModel.query.filter(PhotoModel.user_id==id)
 
 class BytesField(fields.Field):
     def _deserialize(self, value, attr, data, **kwargs):

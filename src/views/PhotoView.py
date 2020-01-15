@@ -22,6 +22,30 @@ def create():
     data = photo_schema.dump(photos)
     return custom_response(data, 200)
 
+@photo_api.route('/', methods=['GET'])
+@Auth.auth_required
+def get_photos(): 
+    photos = PhotoModel.get_photos(Auth.current_user_id())
+    data = photo_schema.dump(photos, many=True)
+    return custom_response(data, 200)
+
+@photo_api.route('/', methods=['PATCH'])
+@Auth.auth_required
+def update(): 
+    req_data = request.get_json()
+    photos = PhotoModel.get_photos(Auth.current_user_id())
+    data = photo_schema.dump(photos)
+    data = photo_schema.load(req_data, partial=True)
+    photos.update(data)
+    data = photo_schema.dump(photos, many=True)
+    return custom_response(data, 201)
+
+
+
+
+
+    
+
 
 
 
