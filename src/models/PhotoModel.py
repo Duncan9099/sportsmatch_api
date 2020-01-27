@@ -47,8 +47,8 @@ class PhotoModel(db.Model):
 
     @staticmethod 
     def get_photos(id):
-        return PhotoModel.query.filter(PhotoModel.user_id==id)
-
+        return PhotoModel.query.filter(PhotoModel.user_id==id).first()
+        
 class BytesField(fields.Field):
     def _deserialize(self, value, attr, data, **kwargs):
         if value is None:
