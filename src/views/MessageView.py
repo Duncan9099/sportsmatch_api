@@ -29,6 +29,16 @@ def get_all_messages(other_user_id):
     })
     return custom_response(data, 200)
 
+@message_api.route('/<int:message_id>', methods=['PATCH'])
+@Auth.auth_required
+def update(message_id): 
+    req_data = request.get_json()
+    data = message_schema.load(req_data, partial=True)
+    message = MessageModel.get_single_message(message_id)
+    message.update(data)
+    message_data = message_schema.dump(message)
+    return custom_response(message_data, 201)
+
 @message_api.route('/', methods=['POST'])
 @Auth.auth_required
 def create():

@@ -1,9 +1,11 @@
 from flask import request, json, Response, Blueprint, g, render_template
 from ..models.PlayerModel import PlayerModel, PlayerSchema
+from ..models.PhotoModel import PhotoModel, PhotoSchema
 from ..shared.Authentication import Auth
 
 player_api = Blueprint('player', __name__)
 player_schema = PlayerSchema()
+photo_schema = PhotoSchema()
 
 @player_api.route('/new', methods=['POST'])
 def create():
@@ -86,18 +88,6 @@ def update():
     player.update(data)
     player_data = player_schema.dump(player)
     return custom_response(player_data, 200)
-
-# @player_api.route('/my_profile', methods=['DELETE'])
-# @Auth.auth_required
-# def delete():
-#     """
-#     Delete logged-in player's account
-#     """
-#     user_id = Auth.current_user_id()
-#     player = PlayerModel.get_one_player(user_id)
-#     player.delete()
-#
-#     return custom_response({'message': 'user deleted'}, 204)
 
 def custom_response(res, status_code):
     return Response(
