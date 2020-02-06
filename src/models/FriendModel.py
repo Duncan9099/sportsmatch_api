@@ -42,8 +42,8 @@ class FriendModel(db.Model):
 
     @staticmethod
     def get_all_friends(user_id): 
-        return FriendModel.query.filter(_or(FriendModel.responder_id==user_id, FriendModel.request_id==user_id).\
-                                filter(FriendModel.confirmed==True))
+        return FriendModel.query.filter(or_(FriendModel.responder_id==user_id, FriendModel.requester_id==user_id)).\
+                                filter(FriendModel.confirmed==True)
 
     def __repr__(self): 
         return '<id {}>'.format(self.id)

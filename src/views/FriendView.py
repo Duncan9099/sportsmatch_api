@@ -46,3 +46,11 @@ def get_requests():
     requests = FriendModel.get_all_friend_requests(user_id)
     data = friend_schema.dump(requests, many=True)
     return custom_response(data, 201)
+
+@friend_api.route('/all', methods=['GET'])
+@Auth.auth_required
+def get_friends(): 
+    user_id = Auth.current_user_id() 
+    friends = FriendModel.get_all_friends(user_id) 
+    data = friend_schema.dump(friends, many=True) 
+    return custom_response(data, 201)
