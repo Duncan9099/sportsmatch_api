@@ -14,6 +14,7 @@ from .views.PlayerView import player_api as player_blueprint
 from .views.MessageView import message_api as message_blueprint
 from .views.GameView import game_api as game_blueprint
 from .views.SportView import sport_api as sport_blueprint
+from .views.FriendView import friend_api as friend_blueprint
 
 def create_app(env_name):
     # app initiliazation
@@ -35,5 +36,6 @@ def create_app(env_name):
     app.register_blueprint(message_blueprint, url_prefix='/api/v1/messages')
     app.register_blueprint(photo_blueprint, url_prefix='/api/v1/photos')
     app.register_blueprint(sport_blueprint, url_prefix='/api/v1/sports')
+    app.register_blueprint(friend_blueprint, url_prefix='/api/v1/friends')
 
     return app
