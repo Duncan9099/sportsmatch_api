@@ -38,3 +38,11 @@ def update(friend_request_id):
         friend.update(data)
         data = friend_schema.dump(friend) 
         return custom_response(data, 201)
+
+@friend_api.route('/', methods=['GET'])
+@Auth.auth_required
+def get_requests(): 
+    user_id = Auth.current_user_id() 
+    requests = FriendModel.get_all_friend_requests(user_id)
+    data = friend_schema.dump(requests, many=True)
+    return custom_response(data, 201)
