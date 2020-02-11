@@ -47,7 +47,6 @@ class GameModel(db.Model): # GameModel class inherits from db.Model
                            filter(GameModel.status != 'completed').\
                            order_by(GameModel.game_date.asc()).\
                            order_by(GameModel.game_time.asc())
-
   
   @staticmethod
   def get_one_game(id):

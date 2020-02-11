@@ -50,6 +50,9 @@ class SportModel(db.Model):
     @staticmethod
     def get_sports(id): 
         return SportModel.query.filter(SportModel.current_user_id==id)
+    
+    def filter_sports(sport):
+        return SportModel.query.filter(Spo==True)
 
     def __repr__(self):
         return '<id {}>'.format(self.id)
