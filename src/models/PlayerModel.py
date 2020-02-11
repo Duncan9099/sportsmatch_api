@@ -26,6 +26,7 @@ class PlayerModel(db.Model):
   profile_image = db.Column(db.LargeBinary, nullable=True)
   bio = db.Column(db.String(200), nullable=True)
   sport = db.Column(db.String(30), nullable=True)
+  sports_and_ability = db.Column(JSON, nullable=True)
   created_at = db.Column(db.DateTime)
   modified_at = db.Column(db.DateTime)
 
@@ -41,6 +42,7 @@ class PlayerModel(db.Model):
     self.dob = data.get('dob')
     self.bio = data.get('bio')
     self.sport = data.get('sport') or "Tennis"
+    self.sports_and_ability = data.get('sports_and_ability')
     self.created_at = datetime.datetime.utcnow()
     self.modified_at = datetime.datetime.utcnow()
     self.profile_image = data.get('profile_image')
@@ -254,6 +256,7 @@ class PlayerSchema(Schema):
     profile_image = BytesField(required=False)
     bio = fields.Str(required=False)
     sport = fields.Str(required=False)
+    sports_and_ability = fields.Str(required=False)
     postcode = Postcode(required=True)
     created_at = fields.DateTime(dump_only=True)
     modified_at = fields.DateTime(dump_only=True)
