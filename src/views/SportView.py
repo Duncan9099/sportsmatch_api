@@ -33,3 +33,14 @@ def update():
     sports.update(data)
     data = sport_schema.dump(sports, many=True)
     return custom_response(data, 200)
+
+@sport_api.route('/filter', methods=['POST'])
+@Auth.auth_required
+def get_filtered_sports(): 
+    user_id = Auth.current_user_id()
+    req_data = request.get_json()
+    data = sport_schema.load(req_data, partial=True)
+    filtered_players = SportModel.filter_sports(data)
+    player_data = sport_schema.dump(filtered_players, many=True)
+    return custom_response(player_data, 200)
+
