@@ -28,6 +28,7 @@ class PlayerModel(db.Model):
   sport = db.Column(db.String(30), nullable=True)
   created_at = db.Column(db.DateTime)
   modified_at = db.Column(db.DateTime)
+  sports = db.relationship("SportModel", primaryjoin="PlayerModel.id==SportModel.current_user_id", backref="sports")
 
   # class constructor to set class attributes
   def __init__(self, data):
@@ -104,10 +105,6 @@ class PlayerModel(db.Model):
   def check_hash(self, password):
     return bcrypt.check_password_hash(self.password, password)
 
-  # @staticmethod
-  # def get_all_players():
-  #   return PlayerModel.query.all()
-
   @staticmethod
   def get_player_by_email(value):
     return PlayerModel.query.filter_by(email=value).first()
@@ -116,21 +113,21 @@ class PlayerModel(db.Model):
   def get_player_profile_image(id):
     return PlayerModel.query.with_entities(PlayerModel.profile_image).filter_by(id=id).first()
 
-  # @staticmethod
-  # def get_player_info(id):
-  #   return  PlayerModel.query.with_entities(
-  #       PlayerModel.id,
-  #       PlayerModel.first_name,
-  #       PlayerModel.last_name,
-  #       PlayerModel.email,
-  #       PlayerModel.dob,
-  #       PlayerModel.ability,
-  #       PlayerModel.gender,
-  #       PlayerModel.rank_points,
-  #       PlayerModel.bio,
-  #       PlayerModel.sport,
-  #       PlayerModel.postcode
-  #   ).filter_by(id=id).first()
+  @staticmethod
+  def get_player_info(id):
+    return  PlayerModel.query.with_entities(
+        PlayerModel.id,
+        PlayerModel.first_name,
+        PlayerModel.last_name,
+        PlayerModel.email,
+        PlayerModel.dob,
+        PlayerModel.ability,
+        PlayerModel.gender,
+        PlayerModel.rank_points,
+        PlayerModel.bio,
+        PlayerModel.sport,
+        PlayerModel.postcode
+    ).filter_by(id=id).first()
 
   @staticmethod
   def get_one_player(id):
@@ -257,4 +254,4 @@ class PlayerSchema(Schema):
     postcode = Postcode(required=True)
     created_at = fields.DateTime(dump_only=True)
     modified_at = fields.DateTime(dump_only=True)
-    games = fields.Nested(GameSchema, many=True)
+    sports = fields.Nested('SportSchema')
