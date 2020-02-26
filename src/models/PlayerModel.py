@@ -5,6 +5,8 @@ from . import db # import db instance from models/__init__.py
 from ..app import bcrypt
 from .GameModel import GameSchema
 from .ResultModel import ResultSchema
+# from .SportModel import SportModel, SportSchema
+from sqlalchemy import or_
 import pgeocode
 import requests
 
@@ -26,9 +28,12 @@ class PlayerModel(db.Model):
   profile_image = db.Column(db.LargeBinary, nullable=True)
   bio = db.Column(db.String(200), nullable=True)
   sport = db.Column(db.String(30), nullable=True)
+  tennis = db.Column(db.String(50), default="None", nullable=True)
+  squash = db.Column(db.String(50), default="None", nullable=True)
+  table_tennis = db.Column(db.String(50), default="None", nullable=True)
+  badminton = fields.Str(required=False)
   created_at = db.Column(db.DateTime)
   modified_at = db.Column(db.DateTime)
-  sports = db.relationship("SportModel", primaryjoin="PlayerModel.id==SportModel.current_user_id", backref="sports")
 
   # class constructor to set class attributes
   def __init__(self, data):
@@ -42,6 +47,10 @@ class PlayerModel(db.Model):
     self.dob = data.get('dob')
     self.bio = data.get('bio')
     self.sport = data.get('sport') or "Tennis"
+    self.tennis = data.get('tennis')
+    self.squash = data.get('squash')
+    self.table_tennis = data.get('table_tennis')
+    self.badminton = data.get('badminton')
     self.created_at = datetime.datetime.utcnow()
     self.modified_at = datetime.datetime.utcnow()
     self.profile_image = data.get('profile_image')
@@ -115,7 +124,7 @@ class PlayerModel(db.Model):
 
   @staticmethod
   def get_player_info(id):
-    return  PlayerModel.query.with_entities(
+    return PlayerModel.query.with_entities(
         PlayerModel.id,
         PlayerModel.first_name,
         PlayerModel.last_name,
@@ -140,13 +149,13 @@ class PlayerModel(db.Model):
     return player_schema.dump(player)
 
   @staticmethod
-  def get_filtered_players(id, ability, distance, page):
+  def get_filtered_players(id, data, page, distance):
     user_schema = PlayerSchema()
     user = PlayerModel.query.filter_by(id=id).first()
     serialized_user = user_schema.dump(user)
-    players = PlayerModel.get_players_by_ability(id, ability, user.sport, page)
+    # players = PlayerModel.get_players_by_ability(id, ability, user.sport, page)
+    players = PlayerModel.get_players_by_ability(data, page)
     return PlayerModel.get_players_within_distance(players, serialized_user, distance)
-
 
   @staticmethod
   def get_player_location(postcode):
@@ -155,26 +164,14 @@ class PlayerModel(db.Model):
       return(req_data['result']['admin_district'])
     return(req_data['error'])
 
-# Currently not in use anywhere
   @staticmethod
-  def get_players_by_ability(id, ability, sport, page):
-    return PlayerModel.query.with_entities(
-        PlayerModel.id,
-        PlayerModel.first_name,
-        PlayerModel.last_name,
-        PlayerModel.dob,
-        PlayerModel.ability,
-        PlayerModel.gender,
-        PlayerModel.rank_points,
-        PlayerModel.bio,
-        PlayerModel.sport,
-        PlayerModel.postcode, 
-        PlayerModel.profile_image
-    ).filter(
-        PlayerModel.ability==ability,
-        PlayerModel.id != id,
-        PlayerModel.sport==sport
-    ).paginate(page=int(page), per_page=4, error_out=True).items
+  def get_players_by_ability(data, page):
+    return PlayerModel.query.filter(or_(
+                PlayerModel.tennis==data.get('tennis'), 
+                PlayerModel.badminton==data.get('badminton'), 
+                PlayerModel.squash==data.get('squash'), 
+                PlayerModel.table_tennis==data.get('table_tennis'))).\
+                paginate(page=int(page), per_page=4, error_out=True).items
 
   @staticmethod
   def get_players_within_distance(players, user, distance):
@@ -204,9 +201,8 @@ class PlayerModel(db.Model):
 class Postcode(fields.Field):
     """
     Creating custom field for scheme that serializes base64 to LargeBinary
-    and desrializes LargeBinary to base64
+    and deserializes LargeBinary to base64
     """
-
     def _deserialize(self, value, attr, data, **kwargs):
         if value is None:
             return ""
@@ -251,7 +247,17 @@ class PlayerSchema(Schema):
     profile_image = BytesField(required=False)
     bio = fields.Str(required=False)
     sport = fields.Str(required=False)
+    tennis = fields.Str(required=False)
+    squash = fields.Str(required=False)
+    table_tennis = fields.Str(required=False)
+    badminton = fields.Str(required=False)
     postcode = Postcode(required=True)
     created_at = fields.DateTime(dump_only=True)
     modified_at = fields.DateTime(dump_only=True)
-    sports = fields.Nested('SportSchema')
+    
+
+    #     
+    # PlayerModel.tennis==,
+    #     PlayerModel.id != id,
+    #     PlayerModel.sport==sport
+    # ).paginate(page=int(page), per_page=4, error_out=True).items

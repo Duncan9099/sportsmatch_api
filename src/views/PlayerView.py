@@ -1,11 +1,13 @@
 from flask import request, json, Response, Blueprint, g, render_template
 from ..models.PlayerModel import PlayerModel, PlayerSchema
 from ..models.PhotoModel import PhotoModel, PhotoSchema
+from ..models.SportModel import SportModel, SportSchema
 from ..shared.Authentication import Auth
 
 player_api = Blueprint('player', __name__)
 player_schema = PlayerSchema()
 photo_schema = PhotoSchema()
+sport_schema = SportSchema()
 
 @player_api.route('/new', methods=['POST'])
 def create():
@@ -70,11 +72,18 @@ def get_current_user():
 
     return custom_response(player_data, 200)
 
-@player_api.route('/', methods=['GET'])
+@player_api.route('/filter', methods=['POST'])
 @Auth.auth_required
 def get_all_players():
     user_id = Auth.current_user_id()
-    players = PlayerModel.get_filtered_players(user_id, request.headers.get('ability'), request.headers.get('distance'), request.headers.get('page'))
+    # players = PlayerModel.get_filtered_players(user_id, request.headers.get('ability'), request.headers.get('distance'), request.headers.get('page'))
+    req_data = request.get_json() 
+    data = player_schema.load(req_data, partial=True)
+    # data = sport_schema.load(req_data, partial=True)
+    # sport_filter = SportModel.filter_sports(data)
+    # sport_data = sport_schema.dump(sport_filter, many=True)
+    # return custom_response(sport_data, 200)
+    players = PlayerModel.get_filtered_players(user_id, data, request.headers.get('page'), request.headers.get('distance'))
     players_data = player_schema.dump(players, many=True)
     return custom_response(players_data, 200)
 

@@ -45,10 +45,16 @@ class SportModel(db.Model):
     
     @staticmethod
     def filter_sports(data):
-        return SportModel.query.filter(or_(SportModel.tennis==data.get('tennis'), 
-                                        SportModel.badminton==data.get('badminton'), 
-                                        SportModel.squash==data.get('squash'), 
-                                        SportModel.table_tennis==data.get('table_tennis')))
+        return SportModel.query.with_entities(
+                SportModel.current_user
+        ).filter(or_(SportModel.tennis==data.get('tennis'), 
+                SportModel.badminton==data.get('badminton'), 
+                SportModel.squash==data.get('squash'), 
+                SportModel.table_tennis==data.get('table_tennis')))
+        # return SportModel.query.filter(or_(SportModel.tennis==data.get('tennis'), 
+        #                                 SportModel.badminton==data.get('badminton'), 
+        #                                 SportModel.squash==data.get('squash'), 
+        #                                 SportModel.table_tennis==data.get('table_tennis')))
 
     def __repr__(self):
         return '<id {}>'.format(self.id)
