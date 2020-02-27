@@ -31,7 +31,9 @@ class PlayerModel(db.Model):
   tennis = db.Column(db.String(50), default="None", nullable=True)
   squash = db.Column(db.String(50), default="None", nullable=True)
   table_tennis = db.Column(db.String(50), default="None", nullable=True)
-  badminton = fields.Str(required=False)
+  badminton = db.Column(db.String(50), default="None", nullable=True)
+  latitude = db.Column(db.Float, nullable=True)
+  longitude = db.Column(db.Float, nullable=True)
   created_at = db.Column(db.DateTime)
   modified_at = db.Column(db.DateTime)
 
@@ -55,6 +57,8 @@ class PlayerModel(db.Model):
     self.modified_at = datetime.datetime.utcnow()
     self.profile_image = data.get('profile_image')
     self.postcode = data.get('postcode')
+    self.latitude = data.get('latitude') 
+    self.longitude = data.get('longitude')
 
   # def set_rank_points(self, ability):
   #     return self.RANKS[ability]-50
@@ -153,7 +157,6 @@ class PlayerModel(db.Model):
     user_schema = PlayerSchema()
     user = PlayerModel.query.filter_by(id=id).first()
     serialized_user = user_schema.dump(user)
-    # players = PlayerModel.get_players_by_ability(id, ability, user.sport, page)
     players = PlayerModel.get_players_by_ability(data, page)
     return PlayerModel.get_players_within_distance(players, serialized_user, distance)
 
@@ -178,15 +181,17 @@ class PlayerModel(db.Model):
       user_postcode = user['postcode']
       filtered_array = []
       for player in players:
-          distances_between_players = int(round(PlayerModel.get_distance_between_postcodes(player.postcode, user_postcode)))
+          # distances_between_players = int(round(PlayerModel.get_distance_between_postcodes(player.postcode, user_postcode)))
+          distances_between_players = int(PlayerModel.get_distance_between_postcodes([[51.545838, -0.167737]], [[51.545838, -0.167737]]))
           if distances_between_players <= int(distance):
               filtered_array.append(player)
       return filtered_array
 
   @staticmethod
   def get_distance_between_postcodes(org_code, opp_code):
-     country = pgeocode.GeoDistance('gb')
-     return country.query_postal_code(org_code[:-3], opp_code[:-3])
+    #  country = pgeocode.GeoDistance('gb')
+    #  return country.query_postal_code(org_code[:-3], opp_code[:-3])
+    return pgeocode.haversine_distance(org_code, opp_code)
 
   @staticmethod
   def get_player_postcode(id):
@@ -251,6 +256,8 @@ class PlayerSchema(Schema):
     squash = fields.Str(required=False)
     table_tennis = fields.Str(required=False)
     badminton = fields.Str(required=False)
+    latitude = fields.Float(required=False) 
+    longitude = fields.Float(required=False)
     postcode = Postcode(required=True)
     created_at = fields.DateTime(dump_only=True)
     modified_at = fields.DateTime(dump_only=True)
