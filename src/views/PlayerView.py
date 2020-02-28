@@ -41,6 +41,7 @@ def login():
         return custom_response({'error': 'invalid credentials'}, 400)
     if not player.check_hash(data.get('password')):
         return custom_response({'error': 'invalid password'}, 400)
+    player.update(data)
     player_data = player_schema.dump(player)
     token = Auth.generate_token(player_data.get('id'))
     return custom_response({
@@ -76,13 +77,8 @@ def get_current_user():
 @Auth.auth_required
 def get_all_players():
     user_id = Auth.current_user_id()
-    # players = PlayerModel.get_filtered_players(user_id, request.headers.get('ability'), request.headers.get('distance'), request.headers.get('page'))
     req_data = request.get_json() 
     data = player_schema.load(req_data, partial=True)
-    # data = sport_schema.load(req_data, partial=True)
-    # sport_filter = SportModel.filter_sports(data)
-    # sport_data = sport_schema.dump(sport_filter, many=True)
-    # return custom_response(sport_data, 200)
     players = PlayerModel.get_filtered_players(user_id, data, request.headers.get('page'), request.headers.get('distance'))
     players_data = player_schema.dump(players, many=True)
     return custom_response(players_data, 200)

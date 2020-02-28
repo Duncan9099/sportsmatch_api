@@ -178,11 +178,12 @@ class PlayerModel(db.Model):
 
   @staticmethod
   def get_players_within_distance(players, user, distance):
-      user_postcode = user['postcode']
+      user_location = [user['latitude'], user['longitude']]
       filtered_array = []
       for player in players:
           # distances_between_players = int(round(PlayerModel.get_distance_between_postcodes(player.postcode, user_postcode)))
-          distances_between_players = int(PlayerModel.get_distance_between_postcodes([[51.545838, -0.167737]], [[51.545838, -0.167737]]))
+          player_location = [player.latitude, player.longitude]
+          distances_between_players = int(PlayerModel.get_distance_between_postcodes([user_location], [player_location]))
           if distances_between_players <= int(distance):
               filtered_array.append(player)
       return filtered_array
