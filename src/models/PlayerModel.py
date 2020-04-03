@@ -17,10 +17,10 @@ class PlayerModel(db.Model):
 
   id = db.Column(db.Integer, primary_key=True)
   first_name = db.Column(db.String(60), nullable=False)
-  last_name = db.Column(db.String(60), nullable=False)
+  last_name = db.Column(db.String(60), nullable=True)
   email = db.Column(db.String(128), unique=True, nullable=False)
   password = db.Column(db.String(128), nullable=False)
-  postcode = db.Column(db.String(20), nullable=False)
+  postcode = db.Column(db.String(20), nullable=True)
   gender = db.Column(db.String(50), nullable=True)
   ability = db.Column(db.String(50), nullable=True)
   rank_points = db.Column(db.Integer, nullable=True)
@@ -45,7 +45,8 @@ class PlayerModel(db.Model):
     self.password = self.__generate_hash(data.get('password'))
     self.gender = data.get('gender')
     self.ability = data.get('ability')
-    self.rank_points = self.set_rank_points(data.get('ability'))
+    # self.rank_points = self.set_rank_points(data.get('ability'))
+    self.rank_points = 50
     self.dob = data.get('dob')
     self.bio = data.get('bio')
     self.sport = data.get('sport') or "Tennis"
@@ -99,18 +100,14 @@ class PlayerModel(db.Model):
     for key, item in data.items():
         if key == 'password':
             setattr(self, 'password', self.__generate_hash(item))
-        elif key == 'ability':
-            self.rank_points = self.set_rank_points(item)
-            setattr(self, 'rank_points', self.rank_points)
-            setattr(self, 'ability', item)
+        # elif key == 'ability':
+        #     self.rank_points = self.set_rank_points(item)
+        #     setattr(self, 'rank_points', self.rank_points)
+        #     setattr(self, 'ability', item)
         else:
           setattr(self, key, item)
     self.modified_at = datetime.datetime.utcnow()
     db.session.commit()
-
-  # def delete(self):
-  #   db.session.delete(self)
-  #   db.session.commit()
 
   def __generate_hash(self, password):
     return bcrypt.generate_password_hash(password, rounds=10).decode("utf-8")
@@ -190,8 +187,6 @@ class PlayerModel(db.Model):
 
   @staticmethod
   def get_distance_between_postcodes(org_code, opp_code):
-    #  country = pgeocode.GeoDistance('gb')
-    #  return country.query_postal_code(org_code[:-3], opp_code[:-3])
     return pgeocode.haversine_distance(org_code, opp_code)
 
   @staticmethod
@@ -243,13 +238,13 @@ class BytesField(fields.Field):
 class PlayerSchema(Schema):
     id = fields.Int(dump_only=True)
     first_name = fields.Str(required=True)
-    last_name = fields.Str(required=True)
+    last_name = fields.Str(required=False)
     email = fields.Email(required=True)
     password = fields.Str(required=True, load_only=True)
-    ability = fields.Str(required=True)
+    ability = fields.Str(required=False)
     rank_points = fields.Int(required=False)
-    gender = fields.Str(required=True)
-    dob = fields.Date(required=True)
+    gender = fields.Str(required=False)
+    dob = fields.Date(required=False)
     profile_image = BytesField(required=False)
     bio = fields.Str(required=False)
     sport = fields.Str(required=False)
@@ -259,13 +254,9 @@ class PlayerSchema(Schema):
     badminton = fields.Str(required=False)
     latitude = fields.Float(required=False) 
     longitude = fields.Float(required=False)
-    postcode = Postcode(required=True)
+    postcode = Postcode(required=False)
     created_at = fields.DateTime(dump_only=True)
     modified_at = fields.DateTime(dump_only=True)
     
 
-    #     
-    # PlayerModel.tennis==,
-    #     PlayerModel.id != id,
-    #     PlayerModel.sport==sport
-    # ).paginate(page=int(page), per_page=4, error_out=True).items
+   

@@ -31,6 +31,10 @@ class FriendModel(db.Model):
         self.modified_at = datetime.datetime.utcnow()
         db.session.commit()
 
+    def delete(self):
+      db.session.delete(self)
+      db.session.commit()
+
     @staticmethod
     def get_friend_request(request_id): 
         return FriendModel.query.filter(FriendModel.id==request_id).first()

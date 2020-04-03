@@ -53,6 +53,29 @@ def login():
         'ability': player_data.get('ability')
     }, 200)
 
+@player_api.route('/fblogin', methods=['POST'])
+def fblogin():
+    req_data = request.get_json()
+    data = player_schema.load(req_data, partial=True)
+    player = PlayerModel.get_player_by_email(data.get('email'))
+    if not player:
+        player = PlayerModel(data)
+        player.save()
+        player_data = player_schema.dump(player)
+        token = Auth.generate_token(player_data.get('id'))
+        return custom_response({'jwt_token': token, 'user_id': player_data.get('id')}, 201)
+    player.update(data)
+    player_data = player_schema.dump(player)
+    token = Auth.generate_token(player_data.get('id'))
+    return custom_response({
+        'jwt_token': token, 
+        'user_id': player_data.get('id'),
+        'profile_image': player_data.get('profile_image'), 
+        'first_name': player_data.get('first_name'), 
+        'sport': player_data.get('sport'), 
+        'ability': player_data.get('ability')
+    }, 200)
+
 @player_api.route('/<int:player_id>', methods=['GET'])
 @Auth.auth_required
 def get_a_player(player_id):

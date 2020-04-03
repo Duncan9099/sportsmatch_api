@@ -54,3 +54,11 @@ def get_friends():
     friends = FriendModel.get_all_friends(user_id) 
     data = friend_schema.dump(friends, many=True) 
     return custom_response(data, 201)
+
+@friend_api.route('/<int:friend_request_id>', methods=['DELETE'])
+@Auth.auth_required
+def delete(friend_request_id): 
+    user_id = Auth.current_user_id
+    request = FriendModel.get_friend_request(friend_request_id)
+    request.delete()
+    return custom_response({'message': 'request deleted'}, 200)
