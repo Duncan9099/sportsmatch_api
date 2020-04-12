@@ -5,6 +5,7 @@ from ..app import create_app, db
 from ..models.PlayerModel import PlayerModel, PlayerSchema
 from ..models.GameModel import GameModel, GameSchema
 from ..models.ResultModel import ResultModel, ResultSchema
+from ..tests.helper import PLAYER_1, PLAYER_2
 
 class ResultsTest(unittest.TestCase):
     """
@@ -13,28 +14,8 @@ class ResultsTest(unittest.TestCase):
     def setUp(self):
         self.app = create_app("test")
         self.client = self.app.test_client
-        self.player_1 = {
-          "first_name": "Dom",
-          "last_name": "T",
-          "email": "dom@test.com",
-          "password": "password",
-          "gender": "Male",
-          "dob": "1990-01-01",
-          "ability": "Beginner",
-          "postcode": "N65HQ",
-          "rank_points": 50
-        }
-        self.player_2 = {
-          "first_name": "Pam",
-          "last_name": "M",
-          "email": "pam@test.com",
-          "password": "password",
-          "gender": "Female",
-          "dob": "1990-01-01",
-          "ability": "Beginner",
-          "postcode": "N65SQ",
-          "rank_points": 50
-        }
+        self.player_1 = PLAYER_1
+        self.player_2 = PLAYER_2
         self.game_1 = {
           "organiser_id": 1,
           "opponent_id": 2,
@@ -101,9 +82,8 @@ class ResultsTest(unittest.TestCase):
           json_data = json.loads(res.data)
           res = self.client().post("api/v1/results/1/new", headers={'Content-Type': 'application/json', 'api-token': api_token}, data=json.dumps(self.result_1))
           json_data = json.loads(res.data)
-          res = self.client().get('api/v1/games/organiser', headers={'Content-Type': 'application/json', 'api-token': api_token})
+          res = self.client().get('api/v1/results/', headers={'Content-Type': 'application/json', 'api-token': api_token})
           json_data = json.loads(res.data)
-          print(json_data)
           self.assertEqual(json_data[0].get('winner_id'), 1)
           self.assertEqual(res.status_code, 200)
 
@@ -153,9 +133,6 @@ class ResultsTest(unittest.TestCase):
           self.assertEqual(res.status_code, 400)
 
     def tearDown(self):
-        """
-        Runs at the end of the test case; drops the db
-        """
         with self.app.app_context():
           db.session.remove()
           db.drop_all()

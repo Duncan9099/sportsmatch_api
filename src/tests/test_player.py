@@ -132,60 +132,6 @@ class PlayersTest(unittest.TestCase):
     self.assertEqual(json_data.get('email'), 'bob@test.com')
     self.assertEqual(json_data.get('first_name'), 'Bob')
 
-  def test_player_gets_points_if_wins(self):
-    updated_game = {
-      "status": "confirmed"
-    }
-    game = {
-        "organiser_id": 1,
-        "opponent_id": 2,
-        "status": "pending",
-        "game_date": "2019-10-22",
-        "game_time": "15:00"
-    }
-    result = {
-        "game_id": 1,
-        "winner_id": 1,
-        "loser_id": 2,
-        "result_confirmed": True
-    }
-    res = self.client().post('api/v1/players/new', headers={'Content-Type': 'application/json'}, data=json.dumps(self.player))
-    res = self.client().post('api/v1/players/login', headers={'Content-Type': 'application/json'}, data=json.dumps(self.player2))
-    api_token = json.loads(res.data).get('jwt_token')
-    res = self.client().post('api/v1/games/', headers={'Content-Type': 'application/json', 'api-token': api_token}, data=json.dumps(game))
-    res = self.client().patch('api/v1/games/1/edit', headers={'Content-Type': 'application/json', 'api-token': api_token}, data=json.dumps(updated_game))
-    res = self.client().post("api/v1/results/1/new", headers={'Content-Type': 'application/json', 'api-token': api_token}, data=json.dumps(result))
-    res = self.client().get("api/v1/players/1", headers={'Content-Type': 'application/json', 'api-token': api_token} )
-    json_data = json.loads(res.data)
-    self.assertEqual(json_data.get('rank_points'), 55)
-
-  def test_player_loses_5_points_if_lost(self):
-    updated_game = {
-      "status": "confirmed"
-    }
-    game = {
-        "organiser_id": 1,
-        "opponent_id": 2,
-        "status": "pending",
-        "game_date": "2019-10-22",
-        "game_time": "15:00"
-    }
-    result = {
-        "game_id": 1,
-        "winner_id": 2,
-        "loser_id": 1,
-        "result_confirmed": True
-    }
-    res = self.client().post('api/v1/players/new', headers={'Content-Type': 'application/json'}, data=json.dumps(self.player))
-    res = self.client().post('api/v1/players/login', headers={'Content-Type': 'application/json'}, data=json.dumps(self.player2))
-    api_token = json.loads(res.data).get('jwt_token')
-    res = self.client().post('api/v1/games/', headers={'Content-Type': 'application/json', 'api-token': api_token}, data=json.dumps(game))
-    res = self.client().patch('api/v1/games/1/edit', headers={'Content-Type': 'application/json', 'api-token': api_token}, data=json.dumps(updated_game))
-    res = self.client().post("api/v1/results/1/new", headers={'Content-Type': 'application/json', 'api-token': api_token}, data=json.dumps(result))
-    res = self.client().get("api/v1/players/1", headers={'Content-Type': 'application/json', 'api-token': api_token} )
-    json_data = json.loads(res.data)
-    self.assertEqual(json_data.get('rank_points'), 45)
-
   def test_player_can_update_their_name(self):
     updated_name = {
       "first_name": "Bobby"
@@ -213,7 +159,7 @@ class PlayersTest(unittest.TestCase):
     self.assertEqual(json_data.get('ability'), 'Intermediate')
 
   def test_postcode_distances(self):
-    self.assertEqual(PlayerModel.get_distance_between_postcodes("N65HQ", 'EC1M4DT'), 6.764520984238515)
+    self.assertEqual(PlayerModel.get_distance_between_postcodes([[51.5255534, -0.0268686]], [[51.5255534, -0.0268686]]), 0)
 
   def test_player_location(self):
     self.assertEqual(PlayerModel.get_player_location("N65HQ"), "Haringey")

@@ -45,7 +45,6 @@ class PlayerModel(db.Model):
     self.password = self.__generate_hash(data.get('password'))
     self.gender = data.get('gender')
     self.ability = data.get('ability')
-    # self.rank_points = self.set_rank_points(data.get('ability'))
     self.rank_points = 50
     self.dob = data.get('dob')
     self.bio = data.get('bio')
@@ -61,37 +60,6 @@ class PlayerModel(db.Model):
     self.latitude = data.get('latitude') 
     self.longitude = data.get('longitude')
 
-  # def set_rank_points(self, ability):
-  #     return self.RANKS[ability]-50
-
-  # def update_winner_rank_points(self):
-  #     new_points = getattr(self, 'rank_points') + 5
-  #     current_ability = getattr(self, 'ability')
-
-  #     if new_points > self.RANKS[current_ability]:
-  #       if current_ability == 'Beginner':
-  #        setattr(self, 'ability', 'Intermediate')
-  #       elif current_ability == 'Intermediate':
-  #           setattr(self, 'ability', 'Advanced')
-
-  #     setattr(self, 'rank_points', new_points)
-  #     self.modified_at = datetime.datetime.utcnow()
-  #     db.session.commit()
-
-  # def update_loser_rank_points(self):
-  #     new_points = getattr(self, 'rank_points') - 5
-  #     current_ability = getattr(self, 'ability')
-
-  #     if new_points <= self.RANKS[current_ability]:
-  #       if current_ability == 'Advanced':
-  #        setattr(self, 'ability', 'Intermediate')
-  #       elif current_ability == 'Intermediate':
-  #           setattr(self, 'ability', 'Beginner')
-
-  #     setattr(self, 'rank_points', new_points)
-  #     self.modified_at = datetime.datetime.utcnow()
-  #     db.session.commit()
-
   def save(self):
     db.session.add(self)
     db.session.commit()
@@ -100,10 +68,6 @@ class PlayerModel(db.Model):
     for key, item in data.items():
         if key == 'password':
             setattr(self, 'password', self.__generate_hash(item))
-        # elif key == 'ability':
-        #     self.rank_points = self.set_rank_points(item)
-        #     setattr(self, 'rank_points', self.rank_points)
-        #     setattr(self, 'ability', item)
         else:
           setattr(self, key, item)
     self.modified_at = datetime.datetime.utcnow()
@@ -178,7 +142,6 @@ class PlayerModel(db.Model):
       user_location = [user['latitude'], user['longitude']]
       filtered_array = []
       for player in players:
-          # distances_between_players = int(round(PlayerModel.get_distance_between_postcodes(player.postcode, user_postcode)))
           player_location = [player.latitude, player.longitude]
           distances_between_players = int(PlayerModel.get_distance_between_postcodes([user_location], [player_location]))
           if distances_between_players <= int(distance):

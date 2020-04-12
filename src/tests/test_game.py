@@ -7,13 +7,7 @@ from ..shared.Authentication import Auth
 from datetime import datetime, timedelta
 
 class GamesTest(unittest.TestCase):
-  """
-  Results Test Case
-  """
   def setUp(self):
-    """
-    Test Setup: runs before each test case method, creates the app and db tables
-    """
     self.app = create_app("test")
     self.client = self.app.test_client
     self.player_1 = {
@@ -136,10 +130,11 @@ class GamesTest(unittest.TestCase):
     json_data = json.loads(res.data)
     res = self.client().get('api/v1/games/', headers={'Content-Type': 'application/json', 'api-token': api_token})
     json_data = json.loads(res.data)
-    organiser_id = json_data.get('organiser_games')[0].get('organiser_id')
-    opponent_id = json_data.get('challenger_games')[0].get('opponent_id')
-    self.assertEqual(organiser_id, 1)
+    organiser_id = json_data[0]['organiser']['id']
+    opponent_id = json_data[0]['opponent']['id']
+    self.assertEqual(organiser_id, 2)
     self.assertEqual(opponent_id, 1)
+    self.assertEqual(len(json_data), 2)
     self.assertEqual(res.status_code, 200)
 
   def test_edit_game(self):
@@ -172,8 +167,6 @@ class GamesTest(unittest.TestCase):
     json_data = json.loads(res.data)
     self.assertEqual(json_data.get('error'), 'game not found')
     self.assertEqual(res.status_code, 404)
-
-
 
   # def test_game_deleted(self):
   #   """ test game is deleted with valid credentials """
