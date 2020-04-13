@@ -1,56 +1,55 @@
 from flask import request, json, Response, Blueprint, g, render_template
 from ..models.PlayerModel import PlayerModel, PlayerSchema
 from ..models.PhotoModel import PhotoModel, PhotoSchema
-from ..models.SportModel import SportModel, SportSchema
+from .helpers import custom_response
 from ..shared.Authentication import Auth
 
 player_api = Blueprint('player', __name__)
 player_schema = PlayerSchema()
 photo_schema = PhotoSchema()
-sport_schema = SportSchema()
 
 @player_api.route('/new', methods=['POST'])
 def create():
     req_data = request.get_json()
     data = player_schema.load(req_data)
     player_in_db = PlayerModel.get_player_by_email(data.get('email'))
+
     if player_in_db:
-        message = {'error': 'Player already exist, please supply another email address'}
+        message = {'error': 'Email is already in use.  If you have already created an account go to Login.  If not, please use a different email address'}
         return custom_response(message, 400)
+
+    if len(data.get('password')) < 8: 
+        message = {'error': 'Password is too short.  Please use at least 8 characters'}
+        return custom_response(message, 400)
+         
     player = PlayerModel(data)
     player.save()
     player_data = player_schema.dump(player)
     token = Auth.generate_token(player_data.get('id'))
     return custom_response({'jwt_token': token, 'user_id': player_data.get('id')}, 201)
 
-@player_api.route('/<int:player_id>/image', methods=['GET'])
-@Auth.auth_required
-def get_image(player_id):
-  player = PlayerModel.get_player_profile_image(player_id)
-  player_data = player_schema.dump(player)
-  return custom_response(player_data, 200)
-
 @player_api.route('/login', methods=['POST'])
 def login():
     req_data = request.get_json()
     data = player_schema.load(req_data, partial=True)
-    if not data.get('email') or not data.get('password'):
-        return custom_response({'error': 'you need email and password to sign in'}, 400)
     player = PlayerModel.get_player_by_email(data.get('email'))
+
+    if not data.get('email') or not data.get('password'):
+        return custom_response({'error': 'Please enter both your email and password to continue'}, 400)
+    
     if not player:
-        return custom_response({'error': 'invalid credentials'}, 400)
+        return custom_response({'error': 'An account by this email address does not exist.  Please check that you have entered the correct email or create a new account'}, 400)
+
     if not player.check_hash(data.get('password')):
-        return custom_response({'error': 'invalid password'}, 400)
+        return custom_response({'error': 'The password that you have submitted is invalid.  Please try again.'}, 400)
+
     player.update(data)
     player_data = player_schema.dump(player)
     token = Auth.generate_token(player_data.get('id'))
     return custom_response({
         'jwt_token': token, 
         'user_id': player_data.get('id'),
-        'profile_image': player_data.get('profile_image'), 
-        'first_name': player_data.get('first_name'), 
-        'sport': player_data.get('sport'), 
-        'ability': player_data.get('ability')
+        'profile_image': player_data.get('profile_image')
     }, 200)
 
 @player_api.route('/fblogin', methods=['POST'])
@@ -58,23 +57,31 @@ def fblogin():
     req_data = request.get_json()
     data = player_schema.load(req_data, partial=True)
     player = PlayerModel.get_player_by_email(data.get('email'))
+
     if not player:
         player = PlayerModel(data)
         player.save()
         player_data = player_schema.dump(player)
         token = Auth.generate_token(player_data.get('id'))
         return custom_response({'jwt_token': token, 'user_id': player_data.get('id')}, 201)
+
     player.update(data)
     player_data = player_schema.dump(player)
     token = Auth.generate_token(player_data.get('id'))
     return custom_response({
         'jwt_token': token, 
         'user_id': player_data.get('id'),
-        'profile_image': player_data.get('profile_image'), 
-        'first_name': player_data.get('first_name'), 
-        'sport': player_data.get('sport'), 
-        'ability': player_data.get('ability')
+        'profile_image': player_data.get('profile_image')
     }, 200)
+
+@player_api.route('/my_profile', methods=['GET'])
+@Auth.auth_required
+def get_current_user():
+    user_id = Auth.current_user_id()
+    player = PlayerModel.get_one_player(user_id)
+    player_data = player_schema.dump(player)
+
+    return custom_response(player_data, 200)
 
 @player_api.route('/<int:player_id>', methods=['GET'])
 @Auth.auth_required
@@ -87,15 +94,6 @@ def get_a_player(player_id):
         return custom_response({'error': 'player not found'}, 404)
     return custom_response(player_data_combined, 200)
 
-@player_api.route('/my_profile', methods=['GET'])
-@Auth.auth_required
-def get_current_user():
-    user_id = Auth.current_user_id()
-    player = PlayerModel.get_one_player(user_id)
-    player_data = player_schema.dump(player)
-
-    return custom_response(player_data, 200)
-
 @player_api.route('/filter', methods=['POST'])
 @Auth.auth_required
 def get_all_players():
@@ -103,6 +101,11 @@ def get_all_players():
     req_data = request.get_json() 
     data = player_schema.load(req_data, partial=True)
     players = PlayerModel.get_filtered_players(user_id, data, request.headers.get('page'), request.headers.get('distance'))
+
+    if not players: 
+        message = {'error': 'There are no players in your area'}
+        return custom_response(message, 200)
+
     players_data = player_schema.dump(players, many=True)
     return custom_response(players_data, 200)
 
@@ -117,9 +120,11 @@ def update():
     player_data = player_schema.dump(player)
     return custom_response(player_data, 200)
 
-def custom_response(res, status_code):
-    return Response(
-      mimetype="application/json",
-      response=json.dumps(res),
-      status=status_code
-    )
+
+# @player_api.route('/<int:player_id>/image', methods=['GET'])
+# @Auth.auth_required
+# def get_image(player_id):
+#   player = PlayerModel.get_player_profile_image(player_id)
+#   player_data = player_schema.dump(player)
+#   return custom_response(player_data, 200)
+

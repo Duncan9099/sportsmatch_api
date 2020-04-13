@@ -1,16 +1,10 @@
 from flask import request, g, Blueprint, json, Response
 from ..shared.Authentication import Auth
 from ..models.FriendModel import FriendModel, FriendSchema
+from .helpers import custom_response
 
 friend_api = Blueprint('friend_api', __name__)
 friend_schema = FriendSchema()
-
-def custom_response(res, status_code): 
-    return Response(
-        mimetype="application/json", 
-        response=json.dumps(res), 
-        status=status_code
-    )
 
 @friend_api.route('/', methods=['POST'])
 @Auth.auth_required

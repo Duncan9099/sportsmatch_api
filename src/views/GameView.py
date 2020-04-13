@@ -3,25 +3,21 @@ from ..shared.Authentication import Auth
 from ..models.GameModel import GameModel, GameSchema
 from ..models.PlayerModel import PlayerModel, PlayerSchema
 from ..models.ResultModel import ResultModel, ResultSchema
+from .helpers import custom_response
 
 game_api = Blueprint('game_api', __name__)
 game_schema = GameSchema()
 player_schema = PlayerSchema()
 result_schema = ResultSchema()
 
-def custom_response(res, status_code):
-  return Response(
-    mimetype="application/json",
-    response=json.dumps(res),
-    status=status_code
-  )
-
 @game_api.route('/<int:game_id>', methods=['GET'])
 @Auth.auth_required
 def get_one(game_id):
   game = GameModel.get_one_game(game_id)
+
   if not game:
     return custom_response({'error': 'game not found'}, 404)
+    
   data = game_schema.dump(game)
   return custom_response(data, 200)
 

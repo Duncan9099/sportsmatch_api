@@ -3,6 +3,7 @@ from ..models.PlayerModel import PlayerModel
 from ..models.ResultModel import ResultModel, ResultSchema
 from ..models.GameModel import GameModel, GameSchema
 from ..shared.Authentication import Auth
+from .helpers import custom_response
 
 result_api = Blueprint('results', __name__)
 result_schema = ResultSchema()
@@ -40,10 +41,3 @@ def get_player_results():
     results = ResultModel.get_player_results(user_id)
     data = result_schema.dump(results, many=True)
     return custom_response(data, 200)
-
-def custom_response(res, status_code):
-    return Response(
-        mimetype="application/json",
-        response=json.dumps(res),
-        status=status_code
-    )

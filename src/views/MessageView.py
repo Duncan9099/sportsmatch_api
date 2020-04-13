@@ -2,16 +2,10 @@ from flask import request, g, Blueprint, json, Response
 from ..shared.Authentication import Auth
 from ..models.MessageModel import MessageModel, MessageSchema
 from ..models.PlayerModel import PlayerModel
+from .helpers import custom_response
 
 message_api = Blueprint('message_api', __name__)
 message_schema = MessageSchema()
-
-def custom_response(res, status_code):
-  return Response(
-    mimetype="application/json",
-    response=json.dumps(res),
-    status=status_code
-  )
 
 @message_api.route('/<int:other_user_id>', methods=['GET'])
 @Auth.auth_required
