@@ -3,7 +3,7 @@ import os
 import json
 from ..app import create_app, db
 from ..models.PlayerModel import PlayerModel, PlayerSchema
-from .helper import PLAYER_1
+from .helper import PLAYER_1, PLAYER_2
 
 class PlayersTest(unittest.TestCase):
   
@@ -11,17 +11,7 @@ class PlayersTest(unittest.TestCase):
     self.app = create_app("test")
     self.client = self.app.test_client
     self.player = PLAYER_1
-    self.player2 = {
-      "first_name": "Bob",
-      "last_name": "T",
-      "email": "bob@test.com",
-      "password": "password",
-      "gender": "Male",
-      "dob": "1990-01-01",
-      "ability": "Beginner",
-      "postcode": "N65HQ",
-      "rank_points": 50
-    }
+    self.player2 = PLAYER_2
     with self.app.app_context():
         db.create_all()
         player2 = PlayerModel(self.player2)
@@ -52,7 +42,7 @@ class PlayersTest(unittest.TestCase):
 
   def test_error_when_player_login_with_invalid_password(self):
     invalid_password_player = {
-      "email": "bob@test.com",
+      "email": "pam@test.com",
       "password": "dgfdgdfg!"
     }
     res = self.client().post('api/v1/players/login', headers={'Content-Type': 'application/json'}, data=json.dumps(invalid_password_player))
@@ -88,25 +78,25 @@ class PlayersTest(unittest.TestCase):
     res = self.client().get('api/v1/players/my_profile', headers={'Content-Type': 'application/json', 'api-token': api_token})
     json_data = json.loads(res.data)
     self.assertEqual(res.status_code, 200)
-    self.assertEqual(json_data.get('email'), 'bob@test.com')
-    self.assertEqual(json_data.get('first_name'), 'Bob')
+    self.assertEqual(json_data.get('email'), 'pam@test.com')
+    self.assertEqual(json_data.get('first_name'), 'Pam')
 
   def test_player_can_update_their_name(self):
     updated_name = {
-      "first_name": "Bobby"
+      "first_name": "Pammy"
     }
     res = self.client().post('api/v1/players/login', headers={'Content-Type': 'application/json'}, data=json.dumps(self.player2))
     api_token = json.loads(res.data).get('jwt_token')
     res = self.client().patch('api/v1/players/my_profile', headers={'Content-Type': 'application/json', 'api-token': api_token}, data=json.dumps(updated_name))
     json_data = json.loads(res.data)
     self.assertEqual(res.status_code, 200)
-    self.assertEqual(json_data.get('email'), 'bob@test.com')
-    self.assertEqual(json_data.get('first_name'), 'Bobby')
+    self.assertEqual(json_data.get('email'), 'pam@test.com')
+    self.assertEqual(json_data.get('first_name'), 'Pammy')
 
   def test_player_can_update_their_password(self):
     updated_player = {
       "password": "password2",
-      "ability": "Intermediate"
+      "gender": "Male"
     }
     res = self.client().post('api/v1/players/login', headers={'Content-Type': 'application/json'}, data=json.dumps(self.player2))
     api_token = json.loads(res.data).get('jwt_token')
@@ -114,8 +104,8 @@ class PlayersTest(unittest.TestCase):
     json_data = json.loads(res.data)
     self.assertEqual(res.status_code, 200)
     print(json_data)
-    self.assertEqual(json_data.get('email'), 'bob@test.com')
-    self.assertEqual(json_data.get('ability'), 'Intermediate')
+    self.assertEqual(json_data.get('email'), 'pam@test.com')
+    self.assertEqual(json_data.get('gender'), 'Male')
 
   def test_haversine_distances(self):
     self.assertEqual(PlayerModel.get_distance_between_postcodes([[51.5255534, -0.0268686]], [[51.5255534, -0.0268686]]), 0)
@@ -130,11 +120,3 @@ class PlayersTest(unittest.TestCase):
 
 if __name__ == "__main__":
   unittest.main()
-
-
-# def test_get_user_image(self):
-  #   res = self.client().post('api/v1/players/login', headers={'Content-Type': 'application/json'}, data=json.dumps(self.player2))
-  #   api_token = json.loads(res.data).get('jwt_token')
-  #   res = self.client().get('api/v1/players/1/image', headers={'Content-Type': 'application/json', 'api-token': api_token} )
-  #   json_data = json.loads(res.data)
-  #   self.assertEqual(res.status_code, 200)

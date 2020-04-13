@@ -20,9 +20,11 @@ def create():
 @Auth.auth_required
 def get_photos(): 
     photos = PhotoModel.get_photos(Auth.current_user_id())
+
     if not photos: 
         message = {'error': 'No photos found'}
         return custom_response(message, 400)
+        
     data = photo_schema.dump(photos)
     return custom_response(data, 200)
 

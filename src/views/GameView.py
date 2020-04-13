@@ -17,7 +17,7 @@ def get_one(game_id):
 
   if not game:
     return custom_response({'error': 'game not found'}, 404)
-    
+
   data = game_schema.dump(game)
   return custom_response(data, 200)
 
@@ -26,24 +26,13 @@ def get_one(game_id):
 def get_all():
     user_id = Auth.current_user_id()
     games = GameModel.get_all_users_games(user_id)
+
+    if not games: 
+      message = {'error': 'You currently have no games scheduled'}
+      custom_response(message, 200)
+
     data = game_schema.dump(games, many=True)
     return custom_response(data, 200)
-
-# @game_api.route('/', methods=['GET'])
-# @Auth.auth_required
-# def get_all():
-#     user_id = Auth.current_user_id()
-#     games = GameModel.get_all_users_games(user_id)
-#     data = game_schema.dump(games, many=True)
-#     organiser = []
-#     challenger = []
-#     for game in data:
-#       if game['organiser_id'] == user_id:
-#         organiser.append({**game, **PlayerModel.get_opponent_info(game['opponent_id'])})
-#       elif game['opponent_id'] == user_id:
-#         challenger.append({**game, **PlayerModel.get_opponent_info(game['organiser_id'])})
-#     results ={'organiser_games': organiser, 'challenger_games': challenger}
-#     return custom_response(results, 200)
 
 @game_api.route('/', methods=['POST'])
 @Auth.auth_required

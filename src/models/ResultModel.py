@@ -57,7 +57,8 @@ class ResultModel(db.Model): # ResultModel class inherits from db.Model
 
     @staticmethod
     def get_player_results(id): 
-        return ResultModel.query.filter(or_(ResultModel.winner_id==id, ResultModel.loser_id==id))
+        return ResultModel.query.filter(or_(ResultModel.winner_id==id, ResultModel.loser_id==id)).\
+            paginate(per_page=10, error_out=True).items
 
 
     def __repr__(self):
