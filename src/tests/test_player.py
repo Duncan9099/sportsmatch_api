@@ -82,25 +82,6 @@ class PlayersTest(unittest.TestCase):
     self.assertFalse(json_data.get('jwt_token'))
     self.assertEqual(res.status_code, 400)
 
-  def test_user1_can_see_user2(self):
-    res = self.client().post('api/v1/players/new', headers={'Content-Type': 'application/json'}, data=json.dumps(self.player))
-    api_token = json.loads(res.data).get('jwt_token')
-    res = self.client().post('api/v1/players/login', headers={'Content-Type': 'application/json', 'api-token': api_token}, data=json.dumps(self.player))
-    api_token = json.loads(res.data).get('jwt_token')
-    res = self.client().get('api/v1/players/1', headers={'Content-Type': 'application/json', 'api-token': api_token} )
-    json_data = json.loads(res.data)
-    self.assertEqual(json_data.get('first_name'), "Bob")
-    self.assertEqual(res.status_code, 200)
-
-  def test_user1_cannot_see_nonexistant_user(self):
-    res = self.client().post('api/v1/players/new', headers={'Content-Type': 'application/json'}, data=json.dumps(self.player))
-    api_token = json.loads(res.data).get('jwt_token')
-    res = self.client().post('api/v1/players/login', headers={'Content-Type': 'application/json', 'api-token': api_token}, data=json.dumps(self.player))
-    api_token = json.loads(res.data).get('jwt_token')
-    res = self.client().get('api/v1/players/10', headers={'Content-Type': 'application/json'} )
-    json_data = json.loads(res.data)
-    self.assertEqual(res.status_code, 400)
-
   def test_player_can_view_their_own_profile(self):
     res = self.client().post('api/v1/players/login', headers={'Content-Type': 'application/json'}, data=json.dumps(self.player2))
     api_token = json.loads(res.data).get('jwt_token')

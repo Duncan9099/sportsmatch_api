@@ -5,7 +5,6 @@ from . import db # import db instance from models/__init__.py
 from ..app import bcrypt
 from .GameModel import GameSchema
 from .ResultModel import ResultSchema
-# from .SportModel import SportModel, SportSchema
 from sqlalchemy import or_
 import pgeocode
 import requests
@@ -86,22 +85,6 @@ class PlayerModel(db.Model):
   @staticmethod
   def get_player_profile_image(id):
     return PlayerModel.query.with_entities(PlayerModel.profile_image).filter_by(id=id).first()
-
-  @staticmethod
-  def get_player_info(id):
-    return PlayerModel.query.with_entities(
-        PlayerModel.id,
-        PlayerModel.first_name,
-        PlayerModel.last_name,
-        PlayerModel.email,
-        PlayerModel.dob,
-        PlayerModel.ability,
-        PlayerModel.gender,
-        PlayerModel.rank_points,
-        PlayerModel.bio,
-        PlayerModel.sport,
-        PlayerModel.postcode
-    ).filter_by(id=id).first()
 
   @staticmethod
   def get_one_player(id):

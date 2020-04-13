@@ -83,17 +83,6 @@ def get_current_user():
 
     return custom_response(player_data, 200)
 
-@player_api.route('/<int:player_id>', methods=['GET'])
-@Auth.auth_required
-def get_a_player(player_id):
-    player = PlayerModel.get_player_info(player_id)
-    player_data = player_schema.dump(player)
-    player_data_location = {'location': PlayerModel.get_player_location(player_data['postcode'])}
-    player_data_combined = {**player_data, **player_data_location}
-    if not player:
-        return custom_response({'error': 'player not found'}, 404)
-    return custom_response(player_data_combined, 200)
-
 @player_api.route('/filter', methods=['POST'])
 @Auth.auth_required
 def get_all_players():
