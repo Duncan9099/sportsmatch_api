@@ -29,24 +29,6 @@ class ResultModel(db.Model): # ResultModel class inherits from db.Model
         db.session.add(self)
         db.session.commit()
 
-    # def update(self, data):
-    #     for key, item in data.items():
-    #         setattr(self, key, item)
-    #     self.modified_at = datetime.datetime.utcnow()
-    #     db.session.commit()
-
-    # def delete(self):
-    #     db.session.delete(self)
-    #     db.session.commit()
-
-    # @staticmethod
-    # def get_all_results():
-    #     return ResultModel.query.all()
-
-    # @staticmethod
-    # def get_one_result(id):
-    #     return ResultModel.query.get(id)
-
     @staticmethod
     def get_result_by_game(value):
         return ResultModel.query.filter_by(game_id=value).first()
@@ -56,9 +38,9 @@ class ResultModel(db.Model): # ResultModel class inherits from db.Model
         return ResultModel.query.filter_by(game_id=value)
 
     @staticmethod
-    def get_player_results(id): 
+    def get_player_results(id, page): 
         return ResultModel.query.filter(or_(ResultModel.winner_id==id, ResultModel.loser_id==id)).\
-            paginate(per_page=10, error_out=True).items
+            paginate(page=int(page), per_page=7, error_out=True).items
 
 
     def __repr__(self):

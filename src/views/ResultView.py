@@ -38,6 +38,6 @@ def create(game_id):
 @Auth.auth_required
 def get_player_results(): 
     user_id = Auth.current_user_id()
-    results = ResultModel.get_player_results(user_id)
+    results = ResultModel.get_player_results(user_id, request.headers.get('page'))
     data = result_schema.dump(results, many=True)
     return custom_response(data, 200)

@@ -42,12 +42,12 @@ class GameModel(db.Model): # GameModel class inherits from db.Model
     return GameModel.query.all()
 
   @staticmethod
-  def get_all_users_games(id):
+  def get_all_users_games(id, page):
     return GameModel.query.filter(or_(GameModel.organiser_id==id, GameModel.opponent_id==id)).\
                            filter(GameModel.status != 'completed').\
                            order_by(GameModel.game_date.asc()).\
                            order_by(GameModel.game_time.asc()).\
-                           paginate(per_page=5, error_out=True).items
+                           paginate(page=int(page), per_page=7, error_out=True).items
   
   @staticmethod
   def get_one_game(id):

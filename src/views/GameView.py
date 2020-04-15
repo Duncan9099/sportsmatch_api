@@ -25,7 +25,7 @@ def get_one(game_id):
 @Auth.auth_required
 def get_all():
     user_id = Auth.current_user_id()
-    games = GameModel.get_all_users_games(user_id)
+    games = GameModel.get_all_users_games(user_id, request.headers.get('page'))
 
     if not games: 
       message = {'error': 'You currently have no games scheduled'}

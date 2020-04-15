@@ -10,8 +10,6 @@ import pgeocode
 import requests
 
 class PlayerModel(db.Model):
-  RANKS = {'Beginner': 100, 'Intermediate': 200, 'Advanced': 300}
-
   __tablename__ = 'players'
 
   id = db.Column(db.Integer, primary_key=True)
@@ -141,7 +139,6 @@ class PlayerModel(db.Model):
       player = PlayerModel.query.with_entities(PlayerModel.postcode).filter_by(id=id).first()
       return player_schema.dump(player)
 
-
   def __repr__(self): # returns a printable representation of the PlayerModel object (returning the id only)
     return '<id {}>'.format(self.id)
 
@@ -165,14 +162,12 @@ class BytesField(fields.Field):
     Creating custom field for schema that deserializes base64 to LargeBinary
     and serializes LargeBinary to base64
     """
-
     def _deserialize(self, value, attr, data, **kwargs):
         if value is None:
             return ""
         binary_string = bin(int.from_bytes(value.encode(), 'big'))
         binary = bytes(binary_string, 'utf-8')
         return binary
-
 
     def _serialize(self, value, attr, obj, **kwargs):
         if value is None:
@@ -203,6 +198,3 @@ class PlayerSchema(Schema):
     postcode = Postcode(required=False)
     created_at = fields.DateTime(dump_only=True)
     modified_at = fields.DateTime(dump_only=True)
-    
-
-   

@@ -108,12 +108,3 @@ def update():
     player.update(data)
     player_data = player_schema.dump(player)
     return custom_response(player_data, 200)
-
-
-# @player_api.route('/<int:player_id>/image', methods=['GET'])
-# @Auth.auth_required
-# def get_image(player_id):
-#   player = PlayerModel.get_player_profile_image(player_id)
-#   player_data = player_schema.dump(player)
-#   return custom_response(player_data, 200)
-
