@@ -10,23 +10,35 @@ photo_schema = PhotoSchema()
 
 @player_api.route('/new', methods=['POST'])
 def create():
-    req_data = request.get_json()
-    data = player_schema.load(req_data)
-    player_in_db = PlayerModel.get_player_by_email(data.get('email'))
+    try:
+        req_data = request.get_json()
+        data = player_schema.load(req_data)
+        player_in_db = PlayerModel.get_player_by_email(data.get('email'))
 
-    if player_in_db:
-        message = {'error': 'Email is already in use.  If you have already created an account go to Login.  If not, please use a different email address'}
-        return custom_response(message, 400)
+        if player_in_db:
+            message = {'error': 'Email is already in use.  If you have already created an account go to Login.  If not, please use a different email address'}
+            return custom_response(message, 400)
 
-    if len(data.get('password')) < 8: 
-        message = {'error': 'Password is too short.  Please use at least 8 characters'}
-        return custom_response(message, 400)
-         
-    player = PlayerModel(data)
-    player.save()
-    player_data = player_schema.dump(player)
-    token = Auth.generate_token(player_data.get('id'))
-    return custom_response({'jwt_token': token, 'user_id': player_data.get('id')}, 201)
+        if not data.get("first_name") or not data.get("last_name"): 
+            message = {'error': 'Please enter both your first and last name'}
+            return custom_response(message, 400)
+
+        if not data.get("email"): 
+            message = {'error': 'Please enter you email address'}
+
+        if len(data.get('password')) < 8: 
+            message = {'error': 'Password is too short.  Please use at least 8 characters'}
+            return custom_response(message, 400)
+            
+        player = PlayerModel(data)
+        player.save()
+        player_data = player_schema.dump(player)
+        token = Auth.generate_token(player_data.get('id'))
+        return custom_response({'jwt_token': token, 'user_id': player_data.get('id')}, 201)
+    except:
+        pass
+        
+    
 
 @player_api.route('/login', methods=['POST'])
 def login():
