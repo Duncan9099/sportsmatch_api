@@ -50,13 +50,11 @@ def create():
 @message_api.route('/', methods=['GET'])
 @Auth.auth_required
 def get_users_messages(): 
-    # message = MessageModel.get_users_messages(Auth.current_user_id()).first()
-    # if not message:
-    #     return custom_response({'message': 'No previous messages'})
+    message = MessageModel.get_users_messages(Auth.current_user_id())[0]
+
+    if not message:
+        return custom_response({'error': 'You have no previous messages'}, 400)
+
     messages = MessageModel.get_users_messages(Auth.current_user_id())
     data = message_schema.dump(messages, many=True)
-    # data.append({
-    #     'sender': message.sender.first_name,
-    #     'receiver': message.receiver.first_name,
-    # })
     return custom_response(data, 200)
