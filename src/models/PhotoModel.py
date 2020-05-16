@@ -1,30 +1,38 @@
 from marshmallow import fields, Schema
 from . import db
 import datetime
+import zlib 
+import boto3
+import botocore
+import os
+import errno
+from botocore.exceptions import ClientError
+
+s3 = boto3.resource('s3')
+photo_bucket = s3.Bucket('s3-sportsmatch-user-images')
+
 
 class PhotoModel(db.Model): 
     __tablename__ = 'photos'
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('players.id'), unique=True, nullable=False)
-    photo1 = db.Column(db.LargeBinary, nullable=True)
-    photo2 = db.Column(db.LargeBinary, nullable=True)
-    photo3 = db.Column(db.LargeBinary, nullable=True)
-    photo4 = db.Column(db.LargeBinary, nullable=True)
-    photo5 = db.Column(db.LargeBinary, nullable=True)
-    photo6 = db.Column(db.LargeBinary, nullable=True)
+    photo1 = db.Column(db.String(128), nullable=True)
+    photo2 = db.Column(db.String(128), nullable=True)
+    photo3 = db.Column(db.String(128), nullable=True)
+    photo4 = db.Column(db.String(128), nullable=True)
+    photo5 = db.Column(db.String(128), nullable=True)
     created_at = db.Column(db.DateTime)
     modified_at = db.Column(db.DateTime)
     user = db.relationship("PlayerModel", primaryjoin = "PhotoModel.user_id == PlayerModel.id", backref="user")
 
     def __init__(self, data): 
         self.user_id = data.get('user_id')
-        self.photo1 = data.get('photo1')
-        self.photo2 = data.get('photo2')
-        self.photo3 = data.get('photo3') 
-        self.photo4 = data.get('photo4') 
-        self.photo5 = data.get('photo5')
-        self.photo6 = data.get('photo6')
+        self.photo1 = f"{data.get('user_id')}-{data.get('photo1')}"
+        self.photo2 = f"{data.get('user_id')}-{data.get('photo2')}"
+        self.photo3 = f"{data.get('user_id')}-{data.get('photo3')}" 
+        self.photo4 = f"{data.get('user_id')}-{data.get('photo4')}" 
+        self.photo5 = f"{data.get('user_id')}-{data.get('photo5')}"
         self.created_at = datetime.datetime.utcnow()
         self.modified_at = datetime.datetime.utcnow()
 
@@ -32,15 +40,37 @@ class PhotoModel(db.Model):
         db.session.add(self)
         db.session.commit()
 
-    def update(self, data):
+    def update(self, data, user_id):
         for key, item in data.items():
-            setattr(self, key, item)
+            filename = self.writeFile(key, item, user_id)
+            filepath = f'http://s3.aws.amazon.com/s3-sportsmatch-user-images/{user_id}-{key}'
+            # photo_bucket.put_object(Key=filepath, Body=)
+            self.uploadFile(filename, user_id, key)
+            setattr(self, key, filepath)
         self.modified_at = datetime.datetime.utcnow()
         db.session.commit()
 
     def delete(self):
         db.session.delete(self)
         db.session.commit()
+
+    def uploadFile(self, file_name, user_id, key):
+        try:
+            key = f'{user_id}/{key}'
+            response = photo_bucket.upload_file(file_name, key, ExtraArgs={'ACL':'public-read'})
+        except ClientError as e:
+            print(e)
+            return False
+        return True
+
+
+    def writeFile(self, key, item, user_id): 
+        filename = f'./src/storage/{user_id}/{key}.txt'
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        with open(filename, "w") as f:
+            f.write(f'{item}')
+        
+        return filename
 
     def __repr__(self):
         return '<id {}>'.format(self.id)
@@ -67,11 +97,10 @@ class BytesField(fields.Field):
 class PhotoSchema(Schema):
     id = fields.Int(dump_only=True)
     user_id = fields.Int(required=True)
-    photo1 = BytesField(required=False)
-    photo2 = BytesField(required=False)
-    photo3 = BytesField(required=False)
-    photo4 = BytesField(required=False)
-    photo5 = BytesField(required=False)
-    photo6 = BytesField(required=False)
+    photo1 = fields.Str(required=False)
+    photo2 = fields.Str(required=False)
+    photo3 = fields.Str(required=False)
+    photo4 = fields.Str(required=False)
+    photo5 = fields.Str(required=False)
     created_at = fields.DateTime(dump_only=True)
     modified_at = fields.DateTime(dump_only=True)

@@ -12,15 +12,10 @@ message_schema = MessageSchema()
 def get_all_messages(other_user_id):
     message = MessageModel.get_all_messages_with_user(Auth.current_user_id(), other_user_id).first()
     if not message:
-        return custom_response({'message': 'No previous messages, start your conversation now', "player_postcode": PlayerModel.get_player_postcode(Auth.current_user_id())}, 200)
+        return custom_response({'error': 'No previous messages, start your conversation now'}, 200)
     messages = MessageModel.get_all_messages_with_user(Auth.current_user_id(), other_user_id)
     data = message_schema.dump(messages, many=True)
     player = PlayerModel.get_player_postcode(Auth.current_user_id())
-    data.append({
-        'sender': message.sender.first_name,
-        'receiver': message.receiver.first_name,
-        "player_postcode": player['postcode']
-    })
     return custom_response(data, 200)
 
 @message_api.route('/<int:message_id>', methods=['PATCH'])

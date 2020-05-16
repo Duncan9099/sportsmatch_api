@@ -38,19 +38,10 @@ def get_player_photos(user_id):
 @photo_api.route('/', methods=['PATCH'])
 @Auth.auth_required
 def update(): 
+    user_id = Auth.current_user_id()
     req_data = request.get_json()
     data = photo_schema.load(req_data, partial=True)
     photos = PhotoModel.get_photos(Auth.current_user_id())
-    photos.update(data)
+    photos.update(data, user_id)
     photo_data = photo_schema.dump(photos)
     return custom_response(photo_data, 201)
-
-
-
-
-
-    
-
-
-
-

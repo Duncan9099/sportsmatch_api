@@ -39,7 +39,6 @@ def create():
         pass
         
     
-
 @player_api.route('/login', methods=['POST'])
 def login():
     req_data = request.get_json()
