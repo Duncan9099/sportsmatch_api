@@ -28,8 +28,8 @@ def get_all():
     games = GameModel.get_all_users_games(user_id, request.headers.get('page'))
 
     if not games: 
-      message = {'error': 'You currently have no games scheduled'}
-      custom_response(message, 200)
+      message = {'error': 'No Games Scheduled'}
+      return custom_response(message, 400)
 
     data = game_schema.dump(games, many=True)
     return custom_response(data, 200)

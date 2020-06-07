@@ -104,7 +104,7 @@ def get_all_players():
 
     if not players: 
         message = {'error': 'There are no players in your area'}
-        return custom_response(message, 200)
+        return custom_response(message, 400)
 
     players_data = player_schema.dump(players, many=True)
     return custom_response(players_data, 200)
@@ -116,6 +116,6 @@ def update():
     data = player_schema.load(req_data, partial=True)
     user_id = Auth.current_user_id()
     player = PlayerModel.get_one_player(user_id)
-    player.update(data)
+    player.update(data, user_id)
     player_data = player_schema.dump(player)
     return custom_response(player_data, 200)

@@ -39,5 +39,10 @@ def create(game_id):
 def get_player_results(): 
     user_id = Auth.current_user_id()
     results = ResultModel.get_player_results(user_id, request.headers.get('page'))
+
+    if not results: 
+        message = {'error': 'No results to show'}
+        return custom_response(message, 400)
+
     data = result_schema.dump(results, many=True)
     return custom_response(data, 200)

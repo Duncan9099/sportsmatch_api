@@ -8,6 +8,15 @@ from .ResultModel import ResultSchema
 from sqlalchemy import or_
 import pgeocode
 import requests
+import boto3
+import botocore
+import os
+import errno
+from botocore.exceptions import ClientError
+
+s3 = boto3.resource('s3')
+photo_bucket = s3.Bucket('s3-sportsmatch-user-images')
+
 
 class PlayerModel(db.Model):
   __tablename__ = 'players'
@@ -19,12 +28,9 @@ class PlayerModel(db.Model):
   password = db.Column(db.String(128), nullable=False)
   postcode = db.Column(db.String(20), nullable=True)
   gender = db.Column(db.String(50), nullable=True)
-  ability = db.Column(db.String(50), nullable=True)
-  rank_points = db.Column(db.Integer, nullable=True)
   dob = db.Column(db.Date, nullable=True)
-  profile_image = db.Column(db.LargeBinary, nullable=True)
+  profile_image = db.Column(db.String(128), nullable=True)
   bio = db.Column(db.String(200), nullable=True)
-  sport = db.Column(db.String(30), nullable=True)
   tennis = db.Column(db.String(50), default="None", nullable=True)
   squash = db.Column(db.String(50), default="None", nullable=True)
   table_tennis = db.Column(db.String(50), default="None", nullable=True)
@@ -41,11 +47,8 @@ class PlayerModel(db.Model):
     self.email = data.get('email')
     self.password = self.__generate_hash(data.get('password'))
     self.gender = data.get('gender')
-    self.ability = data.get('ability')
-    self.rank_points = 50
     self.dob = data.get('dob')
     self.bio = data.get('bio')
-    self.sport = data.get('sport') or "Tennis"
     self.tennis = data.get('tennis')
     self.squash = data.get('squash')
     self.table_tennis = data.get('table_tennis')
@@ -61,12 +64,17 @@ class PlayerModel(db.Model):
     db.session.add(self)
     db.session.commit()
 
-  def update(self, data):
+  def update(self, data, user_id=None):
     for key, item in data.items():
         if key == 'password':
             setattr(self, 'password', self.__generate_hash(item))
+        elif key == 'profile_image': 
+            filename = self.writeFile(key, item, user_id)
+            filepath = f'http://s3.aws.amazon.com/s3-sportsmatch-user-images/{user_id}/{key}'
+            self.uploadFile(filename, user_id, key)
+            setattr(self, key, filepath)
         else:
-          setattr(self, key, item)
+            setattr(self, key, item)
     self.modified_at = datetime.datetime.utcnow()
     db.session.commit()
 
@@ -75,6 +83,23 @@ class PlayerModel(db.Model):
 
   def check_hash(self, password):
     return bcrypt.check_password_hash(self.password, password)
+  
+  def uploadFile(self, file_name, user_id, key):
+        try:
+            key = f'{user_id}/profile_image'
+            response = photo_bucket.upload_file(file_name, key, ExtraArgs={'ACL':'public-read'})
+        except ClientError as e:
+            print(e)
+            return False
+        return True
+
+  def writeFile(self, key, item, user_id): 
+        filename = f'./src/storage/{user_id}/profile.txt'
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        with open(filename, "w") as f:
+            f.write(f'{item}')
+        
+        return filename
 
   @staticmethod
   def get_player_by_email(value):
@@ -182,13 +207,10 @@ class PlayerSchema(Schema):
     last_name = fields.Str(required=False)
     email = fields.Email(required=True)
     password = fields.Str(required=True, load_only=True)
-    ability = fields.Str(required=False)
-    rank_points = fields.Int(required=False)
     gender = fields.Str(required=False)
     dob = fields.Date(required=False)
-    profile_image = BytesField(required=False)
+    profile_image = fields.Str(required=False)
     bio = fields.Str(required=False)
-    sport = fields.Str(required=False)
     tennis = fields.Str(required=False)
     squash = fields.Str(required=False)
     table_tennis = fields.Str(required=False)

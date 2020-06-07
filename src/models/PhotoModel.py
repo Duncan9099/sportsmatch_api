@@ -28,11 +28,11 @@ class PhotoModel(db.Model):
 
     def __init__(self, data): 
         self.user_id = data.get('user_id')
-        self.photo1 = f"{data.get('user_id')}-{data.get('photo1')}"
-        self.photo2 = f"{data.get('user_id')}-{data.get('photo2')}"
-        self.photo3 = f"{data.get('user_id')}-{data.get('photo3')}" 
-        self.photo4 = f"{data.get('user_id')}-{data.get('photo4')}" 
-        self.photo5 = f"{data.get('user_id')}-{data.get('photo5')}"
+        self.photo1 = f"{data.get('user_id')}/{data.get('photo1')}"
+        self.photo2 = f"{data.get('user_id')}/{data.get('photo2')}"
+        self.photo3 = f"{data.get('user_id')}/{data.get('photo3')}" 
+        self.photo4 = f"{data.get('user_id')}/{data.get('photo4')}" 
+        self.photo5 = f"{data.get('user_id')}/{data.get('photo5')}"
         self.created_at = datetime.datetime.utcnow()
         self.modified_at = datetime.datetime.utcnow()
 
@@ -62,7 +62,6 @@ class PhotoModel(db.Model):
             print(e)
             return False
         return True
-
 
     def writeFile(self, key, item, user_id): 
         filename = f'./src/storage/{user_id}/{key}.txt'
