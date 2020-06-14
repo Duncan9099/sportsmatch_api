@@ -46,3 +46,17 @@ def get_player_results():
 
     data = result_schema.dump(results, many=True)
     return custom_response(data, 200)
+
+@result_api.route('/statistics', methods=['GET'])
+@Auth.auth_required
+def get_player_statistics():
+    user_id = Auth.current_user_id()
+    statistics = ResultModel.get_player_statistics(user_id)
+    return custom_response(statistics, 200)
+
+@result_api.route('/statistics/<string:sport>', methods=['GET'])
+@Auth.auth_required
+def get_player_statistics_by_sport(sport):
+    user_id = Auth.current_user_id()
+    statistics = ResultModel.get_player_statistics_by_sport(user_id, sport)
+    return custom_response(statistics, 200)

@@ -15,6 +15,7 @@ class GameModel(db.Model): # GameModel class inherits from db.Model
   game_time = db.Column(db.Time, nullable=False)
   created_at = db.Column(db.DateTime)
   modified_at = db.Column(db.DateTime)
+  sport = db.Column(db.String, nullable=True)
   organiser = db.relationship("PlayerModel", primaryjoin = "GameModel.organiser_id == PlayerModel.id", backref="organiser")
   opponent = db.relationship("PlayerModel", primaryjoin = "GameModel.opponent_id == PlayerModel.id", backref="opponent")
   result = db.relationship("ResultModel", uselist=False, back_populates="game")
@@ -24,6 +25,7 @@ class GameModel(db.Model): # GameModel class inherits from db.Model
     self.opponent_id = data.get('opponent_id')
     self.game_date = data.get('game_date')
     self.game_time = data.get('game_time')
+    self.sport = data.get('sport')
     self.created_at = datetime.datetime.utcnow()
     self.modified_at = datetime.datetime.utcnow()
 
@@ -67,6 +69,7 @@ class GameSchema(Schema):
   game_date = fields.Date(required=True)
   game_time = fields.Time(required=True)
   status = fields.String(required=True)
+  sport = fields.String(required=False)
   created_at = fields.DateTime(dump_only=True)
   modified_at = fields.DateTime(dump_only=True)
   organiser = fields.Nested('PlayerSchema')
