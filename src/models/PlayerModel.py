@@ -65,6 +65,8 @@ class PlayerModel(db.Model):
     db.session.commit()
 
   def update(self, data, user_id=None):
+    sport = ''
+    ability = ''
     for key, item in data.items():
         if key == 'password':
             setattr(self, 'password', self.__generate_hash(item))
@@ -73,10 +75,30 @@ class PlayerModel(db.Model):
             filepath = f'http://s3.aws.amazon.com/s3-sportsmatch-user-images/{user_id}/{key}'
             self.uploadFile(filename, user_id, key)
             setattr(self, key, filepath)
+        elif key == 'sport':
+            sport = item
+        elif key == 'ability':
+            ability = item
         else:
             setattr(self, key, item)
+
+    setattr(self, sport, ability)
     self.modified_at = datetime.datetime.utcnow()
     db.session.commit()
+
+  def update_sport(self, data):
+      sport = ''
+      ability = ''
+      for key, item in data.items():
+          if key == 'sport':
+            sport = item
+
+          if key == 'ability':
+            ability = item
+
+      setattr(self, sport, ability)
+      self.modified_at = datetime.datetime.utcnow()
+      db.session.commit()
 
   def __generate_hash(self, password):
     return bcrypt.generate_password_hash(password, rounds=10).decode("utf-8")

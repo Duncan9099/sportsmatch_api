@@ -113,9 +113,15 @@ def get_all_players():
 @Auth.auth_required
 def update():
     req_data = request.get_json()
-    data = player_schema.load(req_data, partial=True)
     user_id = Auth.current_user_id()
     player = PlayerModel.get_one_player(user_id)
-    player.update(data, user_id)
+
+    if req_data['sport']:
+        player.update_sport(req_data)
+    else:
+        data = player_schema.load(req_data, partial=True)
+        player.update(data, user_id)
+
     player_data = player_schema.dump(player)
     return custom_response(player_data, 200)
+
