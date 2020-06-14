@@ -38,6 +38,11 @@ def update(friend_request_id):
 def get_requests(): 
     user_id = Auth.current_user_id() 
     requests = FriendModel.get_all_friend_requests(user_id)
+
+    if requests.count() < 1:
+        message = {"error": "No Requests Found"}
+        return custom_response(message, 400)
+
     data = friend_schema.dump(requests, many=True)
     return custom_response(data, 201)
 
@@ -45,9 +50,14 @@ def get_requests():
 @Auth.auth_required
 def get_friends(): 
     user_id = Auth.current_user_id() 
-    friends = FriendModel.get_all_friends(user_id) 
+    friends = FriendModel.get_all_friends(user_id)
+
+    if friends.count() < 1:
+        message = {"error": "No Friends Found"}
+        return custom_response(message, 400)
+
     data = friend_schema.dump(friends, many=True) 
-    return custom_response(data, 201)
+    return custom_response(data, 200)
 
 @friend_api.route('/<int:friend_request_id>', methods=['DELETE'])
 @Auth.auth_required
