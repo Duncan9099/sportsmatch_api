@@ -16,8 +16,13 @@ class GameModel(db.Model): # GameModel class inherits from db.Model
   created_at = db.Column(db.DateTime)
   modified_at = db.Column(db.DateTime)
   sport = db.Column(db.String, nullable=True)
+  venue = db.Column(db.String, nullable=True)
+  winner_id = db.Column(db.Integer, db.ForeignKey('players.id'), nullable=True)
+  loser_id = db.Column(db.Integer, db.ForeignKey('players.id'), nullable=True)
   organiser = db.relationship("PlayerModel", primaryjoin = "GameModel.organiser_id == PlayerModel.id", backref="organiser")
   opponent = db.relationship("PlayerModel", primaryjoin = "GameModel.opponent_id == PlayerModel.id", backref="opponent")
+  winner = db.relationship("PlayerModel", primaryjoin = "GameModel.winner_id == PlayerModel.id", backref="winner")
+  loser = db.relationship("PlayerModel", primaryjoin = "GameModel.loser_id == PlayerModel.id", backref="loser")
   result = db.relationship("ResultModel", uselist=False, back_populates="game")
 
   def __init__(self, data): # class constructor used to set the class attributes
@@ -26,6 +31,9 @@ class GameModel(db.Model): # GameModel class inherits from db.Model
     self.game_date = data.get('game_date')
     self.game_time = data.get('game_time')
     self.sport = data.get('sport')
+    self.venue = data.get('venue')
+    self.winner_id = data.get('winner_id')
+    self.loser_id = data.get('loser_id')
     self.created_at = datetime.datetime.utcnow()
     self.modified_at = datetime.datetime.utcnow()
 
@@ -62,6 +70,7 @@ class GameModel(db.Model): # GameModel class inherits from db.Model
   def __repr__(self):
     return '<id {}>'.format(self.id)
 
+
 class GameSchema(Schema):
   id = fields.Int(dump_only=True)
   organiser_id = fields.Int(required=True)
@@ -70,7 +79,12 @@ class GameSchema(Schema):
   game_time = fields.Time(required=True)
   status = fields.String(required=True)
   sport = fields.String(required=False)
+  venue = fields.String(required=False)
+  winner_id = fields.Int(required=False)
+  loser_id = fields.Int(required=False)
   created_at = fields.DateTime(dump_only=True)
   modified_at = fields.DateTime(dump_only=True)
   organiser = fields.Nested('PlayerSchema')
   opponent = fields.Nested('PlayerSchema')
+  winner = fields.Nested('PlayerSchema')
+  loser = fields.Nested('PlayerSchema')
