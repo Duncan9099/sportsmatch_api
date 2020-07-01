@@ -17,12 +17,12 @@ class GameModel(db.Model): # GameModel class inherits from db.Model
   modified_at = db.Column(db.DateTime)
   sport = db.Column(db.String, nullable=True)
   venue = db.Column(db.String, nullable=True)
-  winner_id = db.Column(db.Integer, db.ForeignKey('players.id'), nullable=True)
-  loser_id = db.Column(db.Integer, db.ForeignKey('players.id'), nullable=True)
+  win_id = db.Column(db.Integer, db.ForeignKey('players.id'), nullable=True)
+  lose_id = db.Column(db.Integer, db.ForeignKey('players.id'), nullable=True)
   organiser = db.relationship("PlayerModel", primaryjoin = "GameModel.organiser_id == PlayerModel.id", backref="organiser")
   opponent = db.relationship("PlayerModel", primaryjoin = "GameModel.opponent_id == PlayerModel.id", backref="opponent")
-  winner = db.relationship("PlayerModel", primaryjoin = "GameModel.winner_id == PlayerModel.id", backref="winner")
-  loser = db.relationship("PlayerModel", primaryjoin = "GameModel.loser_id == PlayerModel.id", backref="loser")
+  win = db.relationship("PlayerModel", primaryjoin = "GameModel.win_id == PlayerModel.id", backref="win")
+  lose = db.relationship("PlayerModel", primaryjoin = "GameModel.lose_id == PlayerModel.id", backref="lose")
   result = db.relationship("ResultModel", uselist=False, back_populates="game")
 
   def __init__(self, data): # class constructor used to set the class attributes
@@ -32,8 +32,8 @@ class GameModel(db.Model): # GameModel class inherits from db.Model
     self.game_time = data.get('game_time')
     self.sport = data.get('sport')
     self.venue = data.get('venue')
-    self.winner_id = data.get('winner_id')
-    self.loser_id = data.get('loser_id')
+    self.win_id = data.get('win_id')
+    self.lose_id = data.get('lose_id')
     self.created_at = datetime.datetime.utcnow()
     self.modified_at = datetime.datetime.utcnow()
 
@@ -54,7 +54,9 @@ class GameModel(db.Model): # GameModel class inherits from db.Model
   @staticmethod
   def get_all_users_games(id, page):
     return GameModel.query.filter(or_(GameModel.organiser_id==id, GameModel.opponent_id==id)).\
-                           filter(GameModel.status != 'completed').\
+                           filter(GameModel.status != 'cancelled').\
+                           filter(GameModel.status != 'declined').\
+                           filter(GameModel.status != 'result').\
                            order_by(GameModel.game_date.asc()).\
                            order_by(GameModel.game_time.asc()).\
                            paginate(page=int(page), per_page=7, error_out=True).items
@@ -66,6 +68,12 @@ class GameModel(db.Model): # GameModel class inherits from db.Model
   @staticmethod
   def get_games_by_id(value):
     return GameModel.query.filter_by(id=value)
+
+  @staticmethod
+  def get_all_users_results(id, page):
+    return GameModel.query.filter(or_(GameModel.organiser_id==id, GameModel.opponent_id==id)).\
+                          filter(or_(GameModel.game_date > datetime.datetime.now(), GameModel.status == "result")). \
+                          paginate(page=int(page), per_page=7, error_out=True).items
 
   def __repr__(self):
     return '<id {}>'.format(self.id)
@@ -80,11 +88,11 @@ class GameSchema(Schema):
   status = fields.String(required=True)
   sport = fields.String(required=False)
   venue = fields.String(required=False)
-  winner_id = fields.Int(required=False)
-  loser_id = fields.Int(required=False)
+  win_id = fields.Int(required=False)
+  lose_id = fields.Int(required=False)
   created_at = fields.DateTime(dump_only=True)
   modified_at = fields.DateTime(dump_only=True)
   organiser = fields.Nested('PlayerSchema')
   opponent = fields.Nested('PlayerSchema')
-  winner = fields.Nested('PlayerSchema')
-  loser = fields.Nested('PlayerSchema')
+  win = fields.Nested('PlayerSchema')
+  lose = fields.Nested('PlayerSchema')

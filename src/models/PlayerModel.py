@@ -146,7 +146,7 @@ class PlayerModel(db.Model):
     user_schema = PlayerSchema()
     user = PlayerModel.query.filter_by(id=id).first()
     serialized_user = user_schema.dump(user)
-    players = PlayerModel.get_players_by_ability(data, page)
+    players = PlayerModel.get_players_by_ability(id, data, page)
     return PlayerModel.get_players_within_distance(players, serialized_user, distance)
 
   @staticmethod
@@ -157,12 +157,13 @@ class PlayerModel(db.Model):
     return(req_data['error'])
 
   @staticmethod
-  def get_players_by_ability(data, page):
+  def get_players_by_ability(id, data, page):
     return PlayerModel.query.filter(or_(
                 PlayerModel.tennis==data.get('tennis'), 
                 PlayerModel.badminton==data.get('badminton'), 
                 PlayerModel.squash==data.get('squash'), 
                 PlayerModel.table_tennis==data.get('table_tennis'))).\
+                filter(PlayerModel.id != id).\
                 paginate(page=int(page), per_page=4, error_out=True).items
 
   @staticmethod

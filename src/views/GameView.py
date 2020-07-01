@@ -59,3 +59,15 @@ def edit_game(game_id):
             game.update(data)
             data = game_schema.dump(game)
             return custom_response(data, 201)
+
+@game_api.route('/results', methods=['GET'])
+@Auth.auth_required
+def get_all_results():
+    user_id = Auth.current_user_id()
+    results = GameModel.get_all_users_results(user_id, request.headers.get('page'))
+    if not results:
+        message = {"error": "No Results Found"}
+        return custom_response(message, 400)
+
+    data = game_schema.dump(results, many=True)
+    return custom_response(data, 200)

@@ -116,7 +116,7 @@ def update():
     user_id = Auth.current_user_id()
     player = PlayerModel.get_one_player(user_id)
 
-    if req_data['sport']:
+    if 'sport' in req_data:
         player.update_sport(req_data)
     else:
         data = player_schema.load(req_data, partial=True)
