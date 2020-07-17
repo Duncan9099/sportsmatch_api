@@ -71,3 +71,17 @@ def get_all_results():
 
     data = game_schema.dump(results, many=True)
     return custom_response(data, 200)
+
+@game_api.route('/statistics', methods=['GET'])
+@Auth.auth_required
+def get_player_statistics():
+    user_id = Auth.current_user_id()
+    statistics = GameModel.get_player_statistics(user_id)
+    return custom_response(statistics, 200)
+
+@game_api.route('/statistics/<string:sport>', methods=['GET'])
+@Auth.auth_required
+def get_player_statistics_by_sport(sport):
+    user_id = Auth.current_user_id()
+    statistics = GameModel.get_player_statistics_by_sport(user_id, sport)
+    return custom_response(statistics, 200)

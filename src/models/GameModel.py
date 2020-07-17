@@ -72,8 +72,60 @@ class GameModel(db.Model): # GameModel class inherits from db.Model
   @staticmethod
   def get_all_users_results(id, page):
     return GameModel.query.filter(or_(GameModel.organiser_id==id, GameModel.opponent_id==id)).\
-                          filter(or_(GameModel.game_date > datetime.datetime.now(), GameModel.status == "result")). \
+                          filter(or_(GameModel.game_date > datetime.datetime.now(), GameModel.status == "result")).\
                           paginate(page=int(page), per_page=7, error_out=True).items
+
+  @staticmethod
+  def count_total_games_played(id):
+    result = GameModel.query.filter(or_(GameModel.win_id == id, GameModel.lose_id == id)).\
+                                      filter(GameModel.status == "result")
+    return result.count()
+
+  @staticmethod
+  def count_total_wins(id):
+    result = GameModel.query.filter(GameModel.win_id == id)
+    return result.count()
+
+  @staticmethod
+  def count_total_loses(id):
+    total_games = GameModel.count_total_games_played(id)
+    wins = GameModel.count_total_wins(id)
+    loses = total_games - wins
+    return loses
+
+  @staticmethod
+  def get_player_statistics(id):
+    statistics = {}
+    statistics['total_games'] = GameModel.count_total_games_played(id)
+    statistics['total_wins'] = GameModel.count_total_wins(id)
+    statistics['total_loses'] = GameModel.count_total_loses(id)
+    return statistics
+
+  @staticmethod
+  def count_games_by_sport(id, sport):
+    result = GameModel.query.filter(or_(GameModel.win_id == id, GameModel.lose_id == id)).\
+      filter(GameModel.sport == sport)
+    return result.count()
+
+  @staticmethod
+  def count_wins_by_sport(id, sport):
+    result = GameModel.query.filter(GameModel.win_id == id, GameModel.sport == sport)
+    return result.count()
+
+  @staticmethod
+  def count_loses_by_sport(id, sport):
+    games = GameModel.count_games_by_sport(id, sport)
+    wins = GameModel.count_wins_by_sport(id, sport)
+    loses = games - wins
+    return loses
+
+  @staticmethod
+  def get_player_statistics_by_sport(id, sport):
+    statistics = {}
+    statistics['games'] = GameModel.count_games_by_sport(id, sport)
+    statistics['wins'] = GameModel.count_wins_by_sport(id, sport)
+    statistics['loses'] = GameModel.count_loses_by_sport(id, sport)
+    return statistics
 
   def __repr__(self):
     return '<id {}>'.format(self.id)
