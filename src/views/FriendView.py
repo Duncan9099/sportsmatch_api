@@ -8,9 +8,13 @@ friend_schema = FriendSchema()
 
 @friend_api.route('/', methods=['POST'])
 @Auth.auth_required
-def create(): 
-    req_data = request.get_json() 
+def create():
+    req_data = request.get_json()
     data = friend_schema.load(req_data)
+    friendship_exists = FriendModel.does_friendship_exist(req_data['requester_id'], req_data['responder_id'])
+    if friendship_exists.count() > 0:
+        message = {"error": "You are already friends"}
+        return custom_response(message, 400)
     friend = FriendModel(data)
     friend.save()
     data = friend_schema.dump(friend)
@@ -66,3 +70,16 @@ def delete(friend_request_id):
     request = FriendModel.get_friend_request(friend_request_id)
     request.delete()
     return custom_response({'message': 'request deleted'}, 200)
+
+@friend_api.route('/<int:friend_request_id>', methods=['GET'])
+@Auth.auth_required
+def get_friendship_status(id):
+    user_id = Auth.current_user_id
+    status = FriendModel.does_friendship_exist(user_id, id)
+    if status.count() > 0:
+        message = {"friends": True}
+        custom_response(message, 200)
+
+    if status.count <= 0:
+        message = {"friends": False}
+        custom_response(message, 200)
