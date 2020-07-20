@@ -66,20 +66,19 @@ def get_friends():
 @friend_api.route('/<int:friend_request_id>', methods=['DELETE'])
 @Auth.auth_required
 def delete(friend_request_id): 
-    user_id = Auth.current_user_id
     request = FriendModel.get_friend_request(friend_request_id)
     request.delete()
     return custom_response({'message': 'request deleted'}, 200)
 
 @friend_api.route('/<int:friend_request_id>', methods=['GET'])
 @Auth.auth_required
-def get_friendship_status(id):
-    user_id = Auth.current_user_id
-    status = FriendModel.does_friendship_exist(user_id, id)
+def get_friendship_status(friend_request_id):
+    user_id = Auth.current_user_id()
+    status = FriendModel.does_friendship_exist(user_id, friend_request_id)
     if status.count() > 0:
         message = {"friends": True}
-        custom_response(message, 200)
+        return custom_response(message, 200)
 
-    if status.count <= 0:
+    if status.count() <= 0:
         message = {"friends": False}
-        custom_response(message, 200)
+        return custom_response(message, 200)
