@@ -46,14 +46,21 @@ class FriendModel(db.Model):
                                 filter(FriendModel.confirmed==False)
 
     @staticmethod
-    def get_all_friends(user_id): 
+    def get_all_friends(user_id):
         return FriendModel.query.filter(or_(FriendModel.responder_id==user_id, FriendModel.requester_id==user_id)).\
                                 filter(FriendModel.confirmed==True)
 
     @staticmethod
     def does_friendship_exist(user_id, friend_id):
         return FriendModel.query.filter(or_(FriendModel.responder_id==user_id, FriendModel.requester_id==user_id)).\
-                                filter(or_(FriendModel.responder_id==friend_id, FriendModel.requester_id==friend_id))
+                                filter(or_(FriendModel.responder_id==friend_id, FriendModel.requester_id==friend_id)).\
+                                filter(FriendModel.confirmed==True)
+
+    @staticmethod
+    def request_sent(user_id, friend_id):
+        return FriendModel.query.filter(or_(FriendModel.responder_id == user_id, FriendModel.requester_id == user_id)).\
+            filter(or_(FriendModel.responder_id == friend_id, FriendModel.requester_id == friend_id)).\
+            filter(FriendModel.confirmed==False)
 
     def __repr__(self): 
         return '<id {}>'.format(self.id)
