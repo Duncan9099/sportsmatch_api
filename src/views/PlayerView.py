@@ -63,6 +63,7 @@ def login():
         'profile_image': player_data.get('profile_image')
     }, 200)
 
+
 @player_api.route('/fblogin', methods=['POST'])
 def fblogin():
     req_data = request.get_json()
@@ -94,20 +95,43 @@ def get_current_user():
 
     return custom_response(player_data, 200)
 
+
+# delete this method if searchplayers screeen migrates away from swiping
 @player_api.route('/filter', methods=['POST'])
 @Auth.auth_required
 def get_all_players():
     user_id = Auth.current_user_id()
     req_data = request.get_json() 
     data = player_schema.load(req_data, partial=True)
-    players = PlayerModel.get_filtered_players(user_id, data, request.headers.get('page'), request.headers.get('distance'))
+    player = PlayerModel.get_filtered_players(
+        user_id, data, request.headers.get('page'), request.headers.get('distance')
+    )
 
-    if not players: 
+    if not player:
         message = {'error': 'There are no players in your area'}
         return custom_response(message, 400)
 
-    players_data = player_schema.dump(players, many=True)
-    return custom_response(players_data, 200)
+    player_data = player_schema.dump(player, many=True)
+    return custom_response(player_data, 200)
+
+
+@player_api.route('/random', methods=['POST'])
+@Auth.auth_required
+def get_random_player_with_filters():
+    user_id = Auth.current_user_id()
+    req_data = request.get_json()
+    data = player_schema.load(req_data, partial=True)
+    player = PlayerModel.get_filtered_players(
+        user_id, data, request.headers.get('page'), request.headers.get('distance')
+    )[0]
+
+    if not player:
+        message = {'error': 'There are no players in your area'}
+        return custom_response(message, 400)
+
+    player_data = player_schema.dump(player)
+    return custom_response(player_data, 200)
+
 
 @player_api.route('/my_profile', methods=['PATCH'])
 @Auth.auth_required

@@ -1,8 +1,9 @@
 import datetime
-from . import db # import db instance from models/__init__.py
+from . import db
 from marshmallow import fields, Schema
 from sqlalchemy import or_
 from .PlayerModel import PlayerModel, PlayerSchema
+
 
 class MessageModel(db.Model):
     __tablename__ = 'messages'
@@ -43,14 +44,27 @@ class MessageModel(db.Model):
 
     @staticmethod
     def get_all_messages_with_user(current_user_id, other_user_id):
-      return MessageModel.query.filter(or_(MessageModel.sender_id==current_user_id, MessageModel.receiver_id==current_user_id)).\
+        return MessageModel.query.order_by(MessageModel.created_at).\
+                                filter(or_(MessageModel.sender_id==current_user_id, MessageModel.receiver_id==current_user_id)).\
                                 filter(or_(MessageModel.sender_id==other_user_id, MessageModel.receiver_id==other_user_id))
 
     @staticmethod
     def get_users_messages(current_user_id):
-      return MessageModel.query.filter(or_(MessageModel.sender_id==current_user_id, MessageModel.receiver_id==current_user_id)).\
+        return MessageModel.query.filter(or_(MessageModel.sender_id==current_user_id, MessageModel.receiver_id==current_user_id)).\
                                 distinct(MessageModel.sender_id, MessageModel.receiver_id).\
                                 paginate(per_page=10, error_out=True).items
+
+    # @staticmethod
+    # def get_received_messages(user_id):
+    #     return MessageModel.query.filter(MessageModel.sender_id==user_id)
+    #
+    # @staticmethod
+    # def get_sent_messages(user_id):
+    #     return MessageModel.query.filter(MessageModel.receiver==user_id)
+    #
+    # @staticmethod
+    # def get_distinct_messages(user_id):
+    #     pass
     
     @staticmethod
     def get_single_message(message_id): 

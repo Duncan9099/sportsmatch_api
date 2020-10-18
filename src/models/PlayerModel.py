@@ -1,7 +1,7 @@
 from marshmallow import fields, Schema
 from sqlalchemy.orm import load_only
 import datetime
-from . import db # import db instance from models/__init__.py
+from . import db
 from ..app import bcrypt
 from .GameModel import GameSchema
 from .ResultModel import ResultSchema
@@ -13,6 +13,7 @@ import botocore
 import os
 import errno
 from botocore.exceptions import ClientError
+from sqlalchemy import func
 
 s3 = boto3.resource('s3')
 photo_bucket = s3.Bucket('s3-sportsmatch-user-images')
@@ -106,7 +107,7 @@ class PlayerModel(db.Model):
   def check_hash(self, password):
     return bcrypt.check_password_hash(self.password, password)
   
-  def uploadFile(self, file_name, user_id, key):
+  def uploadFile(self, file_name, user_id):
         try:
             key = f'{user_id}/profile_image'
             response = photo_bucket.upload_file(file_name, key, ExtraArgs={'ACL':'public-read'})
@@ -115,7 +116,7 @@ class PlayerModel(db.Model):
             return False
         return True
 
-  def writeFile(self, key, item, user_id): 
+  def writeFile(self, item, user_id):
         filename = f'./src/storage/{user_id}/profile.txt'
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         with open(filename, "w") as f:
@@ -164,7 +165,8 @@ class PlayerModel(db.Model):
                 PlayerModel.squash==data.get('squash'), 
                 PlayerModel.table_tennis==data.get('table_tennis'))).\
                 filter(PlayerModel.id != id).\
-                paginate(page=int(page), per_page=4, error_out=True).items
+                order_by(func.random())
+                # paginate(page=int(page), per_page=10, error_out=True).items
 
   @staticmethod
   def get_players_within_distance(players, user, distance):
@@ -172,13 +174,13 @@ class PlayerModel(db.Model):
       filtered_array = []
       for player in players:
           player_location = [player.latitude, player.longitude]
-          distances_between_players = int(PlayerModel.get_distance_between_postcodes([user_location], [player_location]))
+          distances_between_players = int(PlayerModel.get_distance_between_players([user_location], [player_location]))
           if distances_between_players <= int(distance):
               filtered_array.append(player)
       return filtered_array
 
   @staticmethod
-  def get_distance_between_postcodes(org_code, opp_code):
+  def get_distance_between_players(org_code, opp_code):
     return pgeocode.haversine_distance(org_code, opp_code)
 
   @staticmethod
